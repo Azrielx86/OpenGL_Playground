@@ -1,0 +1,71 @@
+//
+// Created by kaguya on 8/2/24.
+//
+
+#ifndef SHADERPLAYGROUND_RESOURCEMANAGER_H
+#define SHADERPLAYGROUND_RESOURCEMANAGER_H
+
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
+struct Texture
+{
+	char *fullpath;
+	char *filename;
+	unsigned int id;
+	char *type;
+
+	void LoadTexture();
+
+	~Texture()
+	{
+		delete[] fullpath;
+		delete[] filename;
+		delete[] type;
+	};
+};
+
+// struct is from "https://www.cppstories.com/2021/heterogeneous-access-cpp20/"
+struct string_hash
+{
+	using is_transparent = void;
+
+	[[nodiscard]] size_t operator()(const char *txt) const
+	{
+		return std::hash<std::string_view>{}(txt);
+	}
+
+	// ReSharper disable once CppParameterMayBeConst
+	[[nodiscard]] size_t operator()(std::string_view txt) const
+	{
+		return std::hash<std::string_view>{}(txt);
+	}
+
+	[[nodiscard]] size_t operator()(const std::string &txt) const
+	{
+		return std::hash<std::string>{}(txt);
+	}
+};
+
+class ResourceManager
+{
+  private:
+	std::string resourcesPath = "assets";
+	//	std::vector<std::shared_ptr<Texture>> textures;
+	std::unordered_map<std::string, std::shared_ptr<Texture>, string_hash> textures;
+	ResourceManager() = default;
+	static std::unique_ptr<ResourceManager> instance;
+	// ~ResourceManager();
+
+  public:
+	std::shared_ptr<Texture> GetTexture(std::string_view filename);
+	ResourceManager(ResourceManager &) = delete;
+	ResourceManager operator=(ResourceManager &) = delete;
+	static ResourceManager *GetInstance();
+	void ScanResources();
+	void LoadTextures();
+};
+
+#endif // SHADERPLAYGROUND_RESOURCEMANAGER_H
