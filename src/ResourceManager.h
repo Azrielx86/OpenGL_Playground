@@ -12,12 +12,16 @@
 
 struct Texture
 {
+private:
+	bool loaded = false;
+public:
 	char *fullpath;
 	char *filename;
 	unsigned int id;
 	char *type;
 
 	void LoadTexture();
+	[[nodiscard]] bool IsLoaded() const { return loaded; }
 
 	~Texture()
 	{
@@ -51,21 +55,23 @@ struct string_hash
 
 class ResourceManager
 {
-  private:
 	std::string resourcesPath = "assets";
 	//	std::vector<std::shared_ptr<Texture>> textures;
 	std::unordered_map<std::string, std::shared_ptr<Texture>, string_hash> textures;
 	ResourceManager() = default;
 	static std::unique_ptr<ResourceManager> instance;
 	// ~ResourceManager();
+	static std::mutex mutex;
 
   public:
-	std::shared_ptr<Texture> GetTexture(std::string_view filename);
+	std::shared_ptr<Texture> GetTexture(const std::string &filename) const;
 	ResourceManager(ResourceManager &) = delete;
 	ResourceManager operator=(ResourceManager &) = delete;
 	static ResourceManager *GetInstance();
 	void ScanResources();
 	void LoadTextures();
+	
+	friend struct Texture; 
 };
 
 #endif // SHADERPLAYGROUND_RESOURCEMANAGER_H

@@ -5,12 +5,14 @@
 #include "GlobalDefines.h"
 // endregion Global Include
 #include "Camera.h"
+#include "Entities/Particle.h"
 #include "Input/Keyboard.h"
 #include "Mesh.h"
 #include "Model.h"
 #include "ResourceManager.h"
 #include "Shader.h"
 #include "Window.h"
+
 #include <iostream>
 #include <vector>
 
@@ -22,6 +24,8 @@ bool enableCursor = true;
 Input::Keyboard &keyboard = *Input::Keyboard::GetInstance();
 Input::Mouse &mouse = *Input::Mouse::GetInstance();
 ResourceManager &resources = *ResourceManager::GetInstance();
+
+GLuint particleVAO;
 
 void ConfigureKeys(Window &window)
 {
@@ -61,12 +65,17 @@ int main()
 	}
 
 	resources.ScanResources();
-	resources.LoadTextures();
+
+	auto particleTexture = resources.GetTexture("particle.png");
 
 	Model turret("./assets/models/turret/source/turret_model.fbx");
+	// Model drone("./assets/models/drone/source/Dron.fbx");
 
 	Shader shader{};
 	shader.LoadShader("./shaders/base.vert", "./shaders/base.frag");
+
+	Shader particleShader{};
+	particleShader.LoadShader("./shaders/particle_shader.vert", "./shaders/particle_shader.frag");
 
 	Camera camera({2.0f, 2.0f, 2.0f}, {0.0f, 1.0f, 0.0f});
 	camera.SetInput(Input::Keyboard::GetInstance(), Input::Mouse::GetInstance());
@@ -83,6 +92,12 @@ int main()
 
 	Mesh mesh(vertices, indices, std::vector<std::shared_ptr<Texture>>());
 	mesh.Load();
+
+	constexpr unsigned int particlesCount = 1;
+	std::vector<Entities::Particle> particles(particlesCount);
+
+	for (int i = 0; i < particlesCount; ++i)
+		particles.emplace_back();
 
 	ConfigureKeys(window);
 
@@ -125,7 +140,28 @@ int main()
 		//		mesh.Render(shader);
 		turret.Render(shader);
 
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, {-15.0f, 0.0f, -15.0f});
+		model = glm::scale(model, {0.4f, 0.4f, 0.4f});
+		shader.Set<4, 4>("model", model);
+		// drone.Render(shader);
 		// endregion
+
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		particleShader.Use();
+		for (const auto &particle : particles)
+		{
+			particleShader.Set<2>("offset", particle.position);
+			particleShader.Set<4>("color", particle.color);
+			glBindTexture(GL_TEXTURE_2D, particleTexture->id);
+			// glBindVertexArray(particleVAO);
+			// glDrawArrays(GL_TRIANGLES, 0, 6);
+			// glBindVertexArray(0);
+		}
+		
+		// glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glDisable(GL_BLEND);
 
 		// region gui
 		ImGui::Begin("Camera info");

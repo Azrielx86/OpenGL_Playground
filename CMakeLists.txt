@@ -25,6 +25,8 @@ add_library(imgui
         ${imgui_external_SOURCE_DIR}/imgui_widgets.cpp
         ${imgui_external_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
         ${imgui_external_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
+        src/Entities/Particle.cpp
+        src/Entities/Particle.h
 )
 
 target_include_directories(imgui PUBLIC ${imgui_external_SOURCE_DIR})
@@ -64,6 +66,8 @@ add_executable(ShaderPlayground src/main.cpp
         src/GlobalDefines.h
         src/ResourceManager.cpp
         src/ResourceManager.h
+        src/ParticleInstancer.cpp
+        src/ParticleInstancer.h
 )
 
 message(STATUS "Copying shader files.")

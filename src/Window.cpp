@@ -8,7 +8,7 @@
 #include <format>
 #include <iostream>
 
-Window::Window(int width, int height, const char *name) : height(height), width(width), winName(name)
+Window::Window(const int width, const int height, const char *name) : height(height), width(width), winName(name)
 {
 	this->window = nullptr;
 }

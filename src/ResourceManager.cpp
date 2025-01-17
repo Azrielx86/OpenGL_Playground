@@ -5,12 +5,15 @@
 #include "ResourceManager.h"
 #include "GlobalDefines.h"
 #include <cstring>
+#include <execution>
 #include <filesystem>
 #include <format>
 #include <iostream>
 #include <regex>
 
 std::unique_ptr<ResourceManager> ResourceManager::instance = nullptr;
+
+std::mutex ResourceManager::mutex;
 
 void Texture::LoadTexture()
 {
@@ -22,6 +25,8 @@ void Texture::LoadTexture()
 
 	if (!data)
 		throw std::runtime_error(std::format("Canno't load image: {}", fullpath));
+
+	ResourceManager::mutex.lock();
 
 	glGenTextures(1, &id);
 	if (id == 0)
@@ -36,7 +41,10 @@ void Texture::LoadTexture()
 	glTexImage2D(GL_TEXTURE_2D, 0, channels == 3 ? GL_RGB : GL_RGBA, width, height, 0, channels == 3 ? GL_RGB : GL_RGBA, GL_UNSIGNED_BYTE, data);
 	glGenerateMipmap(GL_TEXTURE_2D);
 
+	ResourceManager::mutex.unlock();
 	stbi_image_free(data);
+
+	loaded = true;
 }
 
 ResourceManager *ResourceManager::GetInstance()
@@ -73,23 +81,23 @@ void ResourceManager::ScanResources()
 
 void ResourceManager::LoadTextures()
 {
-	for (const auto &texture : textures)
-		texture.second->LoadTexture();
+	// for (const auto &texture : textures)
+	// 	texture.second->LoadTexture();
+
+	std::for_each(std::execution::par_unseq,
+	              textures.begin(),
+	              textures.end(),
+	              [](const std::unordered_map<std::string, std::shared_ptr<Texture>, string_hash>::value_type &texture) -> void
+	              {
+		              if (!texture.second->IsLoaded())
+			              texture.second->LoadTexture();
+	              });
 }
 
-// ResourceManager::~ResourceManager()
-// {
-// 	for (const auto& [name, texture] : textures)
-// 	{
-// 		delete[] texture->type;
-// 	}
-// }
-
-std::shared_ptr<Texture> ResourceManager::GetTexture(std::string_view filename)
+std::shared_ptr<Texture> ResourceManager::GetTexture(const std::string &filename) const
 {
-	const auto iter = std::ranges::find_if(textures, [&filename](const auto &s)
-	                         {
-		                         return filename.compare(s.first);
-	                         });
-	return iter != textures.end() ? iter->second : throw std::runtime_error(std::format("Cannot find texture: {}", filename));
+	auto tex = textures.at(filename);
+	if (!tex->IsLoaded())
+		tex->LoadTexture();
+	return tex;
 }
