@@ -5,6 +5,7 @@
 #ifndef SHADERPLAYGROUND_MESH_H
 #define SHADERPLAYGROUND_MESH_H
 
+#include "Material.h"
 #include "ResourceManager.h"
 #include "Shader.h"
 #include <array>
@@ -32,7 +33,7 @@ class Mesh
   public:
 	Mesh(std::vector<Vertex> vertex, std::vector<unsigned int> index, std::vector<std::shared_ptr<Texture>> textures);
 	void Load();
-	void Render([[maybe_unused]] [[maybe_unused]] Shader &shader) const;
+	void Render([[maybe_unused]] [[maybe_unused]] const Shader &shader) const;
 };
 
 #endif // SHADERPLAYGROUND_MESH_H

@@ -16,6 +16,8 @@
 #include <iostream>
 #include <vector>
 
+#define RGBCOLOR(r, g, b) glm::vec3(r / 255.0f, g / 255.0f, b / 255.0f)
+
 float deltaTime, lastTime;
 float red = 0.0f;
 bool enableCursorEvent = true;
@@ -69,29 +71,25 @@ int main()
 	auto particleTexture = resources.GetTexture("particle.png");
 
 	Model turret("./assets/models/turret/source/turret_model.fbx");
-	// Model drone("./assets/models/drone/source/Dron.fbx");
+	Model drone("./assets/models/drone/source/Dron.fbx");
 
+#ifdef DEBUG
+	Shader shader{};
+	shader.LoadShader("../shaders/base.vert", "../shaders/base.frag");
+	Shader particleShader{};
+	particleShader.LoadShader("../shaders/particle_shader.vert", "../shaders/particle_shader.frag");
+#else
 	Shader shader{};
 	shader.LoadShader("./shaders/base.vert", "./shaders/base.frag");
-
 	Shader particleShader{};
 	particleShader.LoadShader("./shaders/particle_shader.vert", "./shaders/particle_shader.frag");
+#endif
 
 	Camera camera({2.0f, 2.0f, 2.0f}, {0.0f, 1.0f, 0.0f});
 	camera.SetInput(Input::Keyboard::GetInstance(), Input::Mouse::GetInstance());
 
 	mouse.ToggleMouse(enableCursor);
 	window.SetMouseStatus(enableCursor);
-
-	std::vector vertices = {
-	    Vertex{.position = {-0.5f, -0.5f, 0.0f}, .normal = {1.0f, 0.0f, 0.0f}, .texCoords = {1.0f, 0.0f}},
-	    Vertex{.position = {0.5f, -0.5f, 0.0f}, .normal = {0.0f, 1.0f, 0.0f}, .texCoords = {0.5f, 0.5f}},
-	    Vertex{.position = {0.0f, 0.5f, 0.0f}, .normal = {0.0f, 0.0f, 1.0f}, .texCoords = {0.0f, 0.1f}}};
-
-	std::vector<unsigned int> indices = {0, 1, 2};
-
-	Mesh mesh(vertices, indices, std::vector<std::shared_ptr<Texture>>());
-	mesh.Load();
 
 	constexpr unsigned int particlesCount = 1;
 	std::vector<Entities::Particle> particles(particlesCount);
@@ -101,11 +99,9 @@ int main()
 
 	ConfigureKeys(window);
 
-	glm::mat4 view = glm::lookAt(glm::vec3(1.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	glm::mat4 projection = glm::perspective(glm::radians(45.0f), window.GetAspect(), 0.1f, 100.0f);
-	glm::mat4 model = glm::translate(glm::mat4(1.0f), {0.0f, 0.0f, 0.0f});
-
-	//	auto
+	glm::mat4 view;
+	glm::mat4 projection;
+	glm::mat4 model;
 
 	while (!window.ShouldClose())
 	{
@@ -113,39 +109,35 @@ int main()
 		deltaTime = now - lastTime;
 		lastTime = now;
 
-		window.StartGui();
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		window.StartGui();
 
 		camera.Move(deltaTime);
 
 		shader.Use();
+		shader.Set<3>("ambientLightColor", glm::vec3{1.0f, 1.0f, 1.0f});
+		// shader.Set<3>("lightColor", RGBCOLOR(147, 112, 219));
+		shader.Set<3>("lightColor", glm::vec3{1.0f, 1.0f, 1.0f});
+		shader.Set<3>("lightPos", glm::vec3{2.0f, 2.0f, 2.0f});
 
 		view = camera.GetLookAt();
 		projection = glm::perspective(glm::radians(45.0f), window.GetAspect(), 0.1f, 100.0f);
-
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, {0.0f, 0.0f, 0.0f});
-		model = glm::scale(model, {0.02f, 0.02f, 0.02f});
-
-		shader.Set<3>("inColor", glm::vec3{red, 0.6f, 0.4f});
-		shader.Set<4, 4>("model", model);
 		shader.Set<4, 4>("view", view);
 		shader.Set<4, 4>("projection", projection);
 
-		// shader.Set<3, 2>("test", glm::mat3x2(1.0f));
-
-		// region render
-
-		//		mesh.Render(shader);
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, {0.0f, 0.0f, 0.0f});
+		model = glm::rotate(model, static_cast<float>(glfwGetTime()), {0.0f, 1.0f, 0.0f});
+		model = glm::scale(model, {0.02f, 0.02f, 0.02f});
+		shader.Set<4, 4>("model", model);
 		turret.Render(shader);
 
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, {-15.0f, 0.0f, -15.0f});
-		model = glm::scale(model, {0.4f, 0.4f, 0.4f});
+		model = glm::translate(model, {5.0f, 0.0f, 5.0f});
+		model = glm::scale(model, {0.02f, 0.02f, 0.02f});
 		shader.Set<4, 4>("model", model);
-		// drone.Render(shader);
-		// endregion
+		drone.Render(shader);
 
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -159,7 +151,7 @@ int main()
 			// glDrawArrays(GL_TRIANGLES, 0, 6);
 			// glBindVertexArray(0);
 		}
-		
+
 		// glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glDisable(GL_BLEND);
 

@@ -5,6 +5,7 @@
 #ifndef SHADERPLAYGROUND_RESOURCEMANAGER_H
 #define SHADERPLAYGROUND_RESOURCEMANAGER_H
 
+#include <assimp/material.h>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -15,10 +16,11 @@ struct Texture
 private:
 	bool loaded = false;
 public:
-	char *fullpath;
-	char *filename;
-	unsigned int id;
-	char *type;
+	char *fullpath{};
+	char *filename{};
+	unsigned int id{};
+	// char *type;
+	aiTextureType type{};
 
 	void LoadTexture();
 	[[nodiscard]] bool IsLoaded() const { return loaded; }
@@ -27,7 +29,7 @@ public:
 	{
 		delete[] fullpath;
 		delete[] filename;
-		delete[] type;
+		// delete[] type;
 	};
 };
 

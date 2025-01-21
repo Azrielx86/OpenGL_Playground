@@ -63,10 +63,12 @@ void Model::LoadMesh(const aiMesh *mesh, [[maybe_unused]] const aiScene *scene)
 	if (mesh->mMaterialIndex > 0)
 	{
 		const auto material = scene->mMaterials[mesh->mMaterialIndex];
-		auto diffuseMaps = LoadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
-		auto specularMaps = LoadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
+		auto diffuseMaps = LoadMaterialTextures(material, aiTextureType_DIFFUSE);
+		auto specularMaps = LoadMaterialTextures(material, aiTextureType_SPECULAR);
+		auto emissiveMaps = LoadMaterialTextures(material, aiTextureType_EMISSIVE);
 		textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+		textures.insert(textures.end(), emissiveMaps.begin(), emissiveMaps.end());
 	}
 
 	auto nMesh = Mesh(vertices, faces, textures);
@@ -74,13 +76,13 @@ void Model::LoadMesh(const aiMesh *mesh, [[maybe_unused]] const aiScene *scene)
 	meshes.push_back(nMesh);
 }
 
-void Model::Render(Shader &shader)
+void Model::Render(const Shader &shader)
 {
 	for (const Mesh &mesh : meshes)
 		mesh.Render(shader);
 }
 
-std::vector<std::shared_ptr<Texture>> Model::LoadMaterialTextures(const aiMaterial *material, const aiTextureType type, const std::string& name)
+std::vector<std::shared_ptr<Texture>> Model::LoadMaterialTextures(const aiMaterial *material, const aiTextureType type)
 {
 	std::vector<std::shared_ptr<Texture>> textures;
 	for (unsigned int i = 0; i < material->GetTextureCount(type); ++i)
@@ -89,7 +91,7 @@ std::vector<std::shared_ptr<Texture>> Model::LoadMaterialTextures(const aiMateri
 		material->GetTexture(type, i, &path);
 
 		std::cmatch results;
-		std::regex_search(path.C_Str(), results, std::regex(R"([^\\]+\.\w+)"));
+		std::regex_search(path.C_Str(), results, std::regex(R"([^\\]+\.\w+$)"));
 
 		if (results.empty())
 		{
@@ -98,11 +100,25 @@ std::vector<std::shared_ptr<Texture>> Model::LoadMaterialTextures(const aiMateri
 		}
 		auto texName = results[0].str();
 		auto texture = ResourceManager::GetInstance()->GetTexture(texName);
-		texture->type = new char[name.length() + 1]{};
-		memcpy(texture->type, name.c_str(), name.size() + 1);
+		texture->type = type;
+		// texture->type = new char[name.length() + 1]{};
+		// memcpy(texture->type, name.c_str(), name.size() + 1);
 		textures.push_back(texture);
 	}
 	return textures;
+}
+
+Material Model::LoadMaterial(const aiMaterial *assimpMaterial)
+{
+	Material material{};
+	aiColor3D color;
+
+	assimpMaterial->Get(AI_MATKEY_BASE_COLOR, color);
+	material.baseColor = glm::vec3(color.r, color.g, color.b);
+
+	assimpMaterial->Get(AI_MATKEY_SHININESS, material.shininess);
+
+	return material;
 }
 
 #pragma clang diagnostic pop

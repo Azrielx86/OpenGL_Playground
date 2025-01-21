@@ -44,7 +44,7 @@ endif ()
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
     message(STATUS "Compiling Debug version.")
-    add_compile_options(-g3)
+    add_compile_options(-g3 -DDEBUG)
 else ()
     add_compile_options(-O2)
 endif ()
@@ -68,6 +68,8 @@ add_executable(ShaderPlayground src/main.cpp
         src/ResourceManager.h
         src/ParticleInstancer.cpp
         src/ParticleInstancer.h
+        src/Material.cpp
+        src/Material.h
 )
 
 message(STATUS "Copying shader files.")

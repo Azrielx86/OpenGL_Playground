@@ -16,9 +16,9 @@ class Shader
   public:
 	void LoadShader(const char *vertexShader, const char *fragmentShader);
 	void Use() const;
-	void SetInt(const char *name, int value) const;
-	void SetBool(const char *name, bool value) const;
-	void SetFloat(const char *name, float value) const;
+	void Set(const char *name, int value) const;
+	void Set(const char *name, bool value) const;
+	void Set(const char *name, float value) const;
 
 	template <unsigned int size>
 	void Set(const char *name, glm::vec<size, int> vector);

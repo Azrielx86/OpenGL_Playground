@@ -43,24 +43,32 @@ void Mesh::Load()
 
 #pragma clang diagnostic pop
 
-void Mesh::Render(Shader &shader) const
+void Mesh::Render(const Shader &shader) const
 {
-	unsigned int diffuseNr = 1;
-	unsigned int specularNr = 1;
 	for (unsigned int i = 0; i < textures.size(); ++i)
 	{
-		glActiveTexture(GL_TEXTURE0 + i);
-		auto texture = textures[i];
-		std::string name(texture->type);
-		if (name == "texture_diffuse")
-			name.append(std::to_string(diffuseNr++));
-		else if (name == "texture_specular")
-			name.append(std::to_string(specularNr++));
+		const auto texture = textures[i];
 
-		shader.SetInt(name.c_str(), static_cast<int>(i));
+		std::string name{};
+		switch (texture->type)
+		{
+		case aiTextureType_DIFFUSE:
+			name = "texture_diffuse";
+			break;
+		case aiTextureType_SPECULAR:
+			name = "texture_specular";
+			break;
+		case aiTextureType_EMISSIVE:
+			name = "texture_emissive";
+			break;
+		default:;
+		}
+
+		shader.Set(name.c_str(), static_cast<int>(i));
+		glActiveTexture(GL_TEXTURE0 + i);
 		glBindTexture(GL_TEXTURE_2D, texture->id);
 	}
-	glActiveTexture(GL_TEXTURE0);
+	// glActiveTexture(GL_TEXTURE0);
 
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);

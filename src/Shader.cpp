@@ -72,20 +72,20 @@ void Shader::CompileProgram()
 	}
 }
 
-GLuint Shader::CompileShader(GLuint program, const char *shaderCode, GLenum type)
+GLuint Shader::CompileShader(const GLuint program, const char *shaderCode, const GLenum type)
 {
-	GLuint shader = glCreateShader(type);
+	const GLuint shader = glCreateShader(type);
 	const GLchar *code[1];
 	code[0] = shaderCode;
 
 	GLint codeLen[1];
-	codeLen[0] = (GLint) strlen(shaderCode);
+	codeLen[0] = static_cast<GLint>(strlen(shaderCode));
 
 	glShaderSource(shader, 1, code, codeLen);
 	glCompileShader(shader);
 
 	GLint result;
-	GLchar log[1024] = {0};
+	GLchar log[1024] = {};
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
 	if (!result)
 	{
@@ -99,10 +99,10 @@ GLuint Shader::CompileShader(GLuint program, const char *shaderCode, GLenum type
 
 void Shader::Use() const { glUseProgram(programId); }
 
-void Shader::SetInt(const char *name, int value) const { glUniform1i(glGetUniformLocation(programId, name), value); }
+void Shader::Set(const char *name, const int value) const { glUniform1i(glGetUniformLocation(programId, name), value); }
 
-void Shader::SetBool(const char *name, bool value) const { glUniform1i(glGetUniformLocation(programId, name), (int) value); }
+void Shader::Set(const char *name, const bool value) const { glUniform1i(glGetUniformLocation(programId, name), static_cast<int>(value)); }
 
-void Shader::SetFloat(const char *name, float value) const { glUniform1f(glGetUniformLocation(programId, name), value); }
+void Shader::Set(const char *name, const float value) const { glUniform1f(glGetUniformLocation(programId, name), value); }
 
 
