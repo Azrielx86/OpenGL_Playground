@@ -11,6 +11,7 @@
 #include "Model.h"
 #include "ResourceManager.h"
 #include "Shader.h"
+#include "Skybox.h"
 #include "Window.h"
 
 #include <iostream>
@@ -73,16 +74,32 @@ int main()
 	Model turret("./assets/models/turret/source/turret_model.fbx");
 	Model drone("./assets/models/drone/source/Dron.fbx");
 
+	// clang-format off
+	Skybox skybox({
+	    "./assets/textures/skybox/px.png",
+	    "./assets/textures/skybox/nx.png",
+	    "./assets/textures/skybox/py.png",
+	    "./assets/textures/skybox/ny.png",
+	    "./assets/textures/skybox/pz.png",
+	    "./assets/textures/skybox/nz.png"
+	});
+	// clang-format on
+	skybox.Load();
+
 #ifdef DEBUG
 	Shader shader{};
 	shader.LoadShader("../shaders/base.vert", "../shaders/base.frag");
 	Shader particleShader{};
 	particleShader.LoadShader("../shaders/particle_shader.vert", "../shaders/particle_shader.frag");
+	Shader skyboxShader{};
+	skyboxShader.LoadShader("../shaders/skybox_shader.vert", "../shaders/skybox_shader.frag");
 #else
 	Shader shader{};
 	shader.LoadShader("./shaders/base.vert", "./shaders/base.frag");
 	Shader particleShader{};
 	particleShader.LoadShader("./shaders/particle_shader.vert", "./shaders/particle_shader.frag");
+	Shader skyboxShader{};
+	skyboxShader.LoadShader("./shaders/skybox_shader.vert", "./shaders/skybox_shader.frag");
 #endif
 
 	Camera camera({2.0f, 2.0f, 2.0f}, {0.0f, 1.0f, 0.0f});
@@ -94,7 +111,7 @@ int main()
 	constexpr unsigned int particlesCount = 1;
 	std::vector<Entities::Particle> particles(particlesCount);
 
-	for (int i = 0; i < particlesCount; ++i)
+	for (unsigned int i = 0; i < particlesCount; ++i)
 		particles.emplace_back();
 
 	ConfigureKeys(window);
@@ -115,16 +132,22 @@ int main()
 
 		camera.Move(deltaTime);
 
+		view = camera.GetLookAt();
+		projection = glm::perspective(glm::radians(45.0f), window.GetAspect(), 0.1f, 100.0f);
+
+		skybox
+		    .BeginRender(skyboxShader)
+		    .SetProjection(projection)
+		    .SetView(view)
+		    .Render();
+
 		shader.Use();
+		shader.Set<4, 4>("view", view);
+		shader.Set<4, 4>("projection", projection);
 		shader.Set<3>("ambientLightColor", glm::vec3{1.0f, 1.0f, 1.0f});
 		// shader.Set<3>("lightColor", RGBCOLOR(147, 112, 219));
 		shader.Set<3>("lightColor", glm::vec3{1.0f, 1.0f, 1.0f});
 		shader.Set<3>("lightPos", glm::vec3{2.0f, 2.0f, 2.0f});
-
-		view = camera.GetLookAt();
-		projection = glm::perspective(glm::radians(45.0f), window.GetAspect(), 0.1f, 100.0f);
-		shader.Set<4, 4>("view", view);
-		shader.Set<4, 4>("projection", projection);
 
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, {0.0f, 0.0f, 0.0f});

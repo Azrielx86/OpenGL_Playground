@@ -70,6 +70,8 @@ add_executable(ShaderPlayground src/main.cpp
         src/ParticleInstancer.h
         src/Material.cpp
         src/Material.h
+        src/Skybox.cpp
+        src/Skybox.h
 )
 
 message(STATUS "Copying shader files.")
