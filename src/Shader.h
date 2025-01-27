@@ -21,10 +21,10 @@ class Shader
 	void Set(const char *name, float value) const;
 
 	template <unsigned int size>
-	void Set(const char *name, glm::vec<size, int> vector);
+	void Set(const char *name, const glm::vec<size, int> &vector);
 
 	template <unsigned int size>
-	void Set(const char *name, glm::vec<size, float> vector);
+	void Set(const char *name, const glm::vec<size, float> &vector);
 
 	template <unsigned int size_x, unsigned int size_y>
 	void Set(const char *name, const glm::mat<size_x, size_y, float> &matrix);
@@ -40,7 +40,7 @@ class Shader
 };
 
 template <unsigned int size>
-void Shader::Set(const char *name, glm::vec<size, int> vector)
+void Shader::Set(const char *name, const glm::vec<size, int> &vector)
 {
 	switch (size)
 	{
@@ -58,7 +58,7 @@ void Shader::Set(const char *name, glm::vec<size, int> vector)
 }
 
 template <unsigned int size>
-void Shader::Set(const char *name, glm::vec<size, float> vector)
+void Shader::Set(const char *name, const glm::vec<size, float> &vector)
 {
 	switch (size)
 	{

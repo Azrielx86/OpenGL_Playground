@@ -8,7 +8,12 @@
 
 struct Material {
 	glm::vec3 baseColor;
+	glm::vec3 ambient;
+	glm::vec3 diffuse;
+	glm::vec3 specular;
+	glm::vec3 emissive;
 	float shininess;
+	bool textured;
 };
 
 

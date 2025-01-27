@@ -8,7 +8,8 @@
 
 #include <utility>
 
-Mesh::Mesh(std::vector<Vertex> vertex, std::vector<unsigned int> index, std::vector<std::shared_ptr<Texture>> textures) : vertex(std::move(vertex)), index(std::move(index)), textures(std::move(textures)) {}
+Mesh::Mesh(std::vector<Vertex> vertex, std::vector<unsigned int> index, std::vector<std::shared_ptr<Texture>> textures, const Material &material)
+    : vertex(std::move(vertex)), index(std::move(index)), textures(std::move(textures)), material(material) {}
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "modernize-use-nullptr"
@@ -75,4 +76,9 @@ void Mesh::Render(const Shader &shader) const
 	glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(index.size()), GL_UNSIGNED_INT, nullptr);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
+}
+
+Material *Mesh::GetMaterial()
+{
+	return &this->material;
 }

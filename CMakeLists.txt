@@ -10,8 +10,19 @@ find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(glfw3 REQUIRED)
 find_package(glm REQUIRED)
-find_package(assimp REQUIRED)
+#find_package(assimp REQUIRED)
 
+# assimp
+FetchContent_Declare(assimp
+        GIT_REPOSITORY https://github.com/assimp/assimp.git
+        GIT_TAG v5.4.3)
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(ASSIMP_INJECT_DEBUG_POSTFIX OFF CACHE BOOL "" FORCE)
+set(ASSIMP_INSTALL OFF CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(assimp)
+
+# imgui
 FetchContent_Declare(imgui_external
         URL https://github.com/ocornut/imgui/archive/refs/tags/v1.90.9.tar.gz
         EXCLUDE_FROM_ALL
@@ -27,6 +38,8 @@ add_library(imgui
         ${imgui_external_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
         src/Entities/Particle.cpp
         src/Entities/Particle.h
+        src/Lights/Light.cpp
+        src/Lights/Light.h
 )
 
 target_include_directories(imgui PUBLIC ${imgui_external_SOURCE_DIR})
@@ -44,9 +57,9 @@ endif ()
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
     message(STATUS "Compiling Debug version.")
-    add_compile_options(-g3 -DDEBUG)
+    add_compile_options(-O0 -gfull -DDEBUG)
 else ()
-    add_compile_options(-O2)
+    add_compile_options(-O3)
 endif ()
 
 

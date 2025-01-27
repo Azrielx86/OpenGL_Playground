@@ -7,6 +7,7 @@
 #include "Camera.h"
 #include "Entities/Particle.h"
 #include "Input/Keyboard.h"
+#include "Lights/Light.h"
 #include "Mesh.h"
 #include "Model.h"
 #include "ResourceManager.h"
@@ -72,7 +73,7 @@ int main()
 	auto particleTexture = resources.GetTexture("particle.png");
 
 	Model turret("./assets/models/turret/source/turret_model.fbx");
-	Model drone("./assets/models/drone/source/Dron.fbx");
+	Model cube("./assets/models/Cube.fbx");
 
 	// clang-format off
 	Skybox skybox({
@@ -105,6 +106,10 @@ int main()
 	Camera camera({2.0f, 2.0f, 2.0f}, {0.0f, 1.0f, 0.0f});
 	camera.SetInput(Input::Keyboard::GetInstance(), Input::Mouse::GetInstance());
 
+	Lights::Light exampleLight;
+	exampleLight.SetPosition({2.0f, 2.0f, 2.0f});
+	exampleLight.SetColor({1.0f, 1.0f, 1.0f});
+	
 	mouse.ToggleMouse(enableCursor);
 	window.SetMouseStatus(enableCursor);
 
@@ -146,8 +151,8 @@ int main()
 		shader.Set<4, 4>("projection", projection);
 		shader.Set<3>("ambientLightColor", glm::vec3{1.0f, 1.0f, 1.0f});
 		// shader.Set<3>("lightColor", RGBCOLOR(147, 112, 219));
-		shader.Set<3>("lightColor", glm::vec3{1.0f, 1.0f, 1.0f});
-		shader.Set<3>("lightPos", glm::vec3{2.0f, 2.0f, 2.0f});
+		shader.Set<3>("lightColor", exampleLight.GetColor());
+		shader.Set<3>("lightPos", exampleLight.GetPosition());
 
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, {0.0f, 0.0f, 0.0f});
@@ -157,10 +162,10 @@ int main()
 		turret.Render(shader);
 
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, {5.0f, 0.0f, 5.0f});
-		model = glm::scale(model, {0.02f, 0.02f, 0.02f});
+		model = glm::translate(model, {1.0f, 0.0f, 1.0f});
+		model = glm::scale(model, {0.05f, 0.05f, 0.05f});
 		shader.Set<4, 4>("model", model);
-		drone.Render(shader);
+		cube.Render(shader);
 
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

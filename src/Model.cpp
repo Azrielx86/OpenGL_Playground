@@ -60,26 +60,40 @@ void Model::LoadMesh(const aiMesh *mesh, [[maybe_unused]] const aiScene *scene)
 			faces.push_back(face.mIndices[j]);
 	}
 
-	if (mesh->mMaterialIndex > 0)
+	Material material{};
+
+	// if (mesh->mMaterialIndex >= 0)
+	if (scene->mNumMaterials > 0)
 	{
-		const auto material = scene->mMaterials[mesh->mMaterialIndex];
-		auto diffuseMaps = LoadMaterialTextures(material, aiTextureType_DIFFUSE);
-		auto specularMaps = LoadMaterialTextures(material, aiTextureType_SPECULAR);
-		auto emissiveMaps = LoadMaterialTextures(material, aiTextureType_EMISSIVE);
+		const auto mat = scene->mMaterials[mesh->mMaterialIndex];
+		auto diffuseMaps = LoadMaterialTextures(mat, aiTextureType_DIFFUSE);
+		auto specularMaps = LoadMaterialTextures(mat, aiTextureType_SPECULAR);
+		auto emissiveMaps = LoadMaterialTextures(mat, aiTextureType_EMISSIVE);
 		textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 		textures.insert(textures.end(), emissiveMaps.begin(), emissiveMaps.end());
+		material = LoadMaterial(mat);
+		material.textured = !textures.empty();
 	}
 
-	auto nMesh = Mesh(vertices, faces, textures);
+	auto nMesh = Mesh(vertices, faces, textures, material);
 	nMesh.Load();
 	meshes.push_back(nMesh);
 }
 
-void Model::Render(const Shader &shader)
+void Model::Render(Shader &shader)
 {
-	for (const Mesh &mesh : meshes)
+	for (Mesh &mesh : meshes)
+	{
+		const auto material = mesh.GetMaterial();
+		shader.Set<3>("material.ambient", material->ambient);
+		shader.Set<3>("material.diffuse", material->diffuse);
+		shader.Set<3>("material.emissive", material->emissive);
+		shader.Set<3>("material.specular", material->specular);
+		shader.Set("material.shininess", material->shininess);
+		shader.Set("material.textured", material->textured);
 		mesh.Render(shader);
+	}
 }
 
 std::vector<std::shared_ptr<Texture>> Model::LoadMaterialTextures(const aiMaterial *material, const aiTextureType type)
@@ -110,15 +124,31 @@ std::vector<std::shared_ptr<Texture>> Model::LoadMaterialTextures(const aiMateri
 
 Material Model::LoadMaterial(const aiMaterial *assimpMaterial)
 {
-	Material material{};
+	Material mat{};
 	aiColor3D color;
+	aiColor3D diffuse;
+	aiColor3D ambient;
+	aiColor3D specular;
+	aiColor3D emissive;
 
 	assimpMaterial->Get(AI_MATKEY_BASE_COLOR, color);
-	material.baseColor = glm::vec3(color.r, color.g, color.b);
+	mat.baseColor = glm::vec3(color.r, color.g, color.b);
 
-	assimpMaterial->Get(AI_MATKEY_SHININESS, material.shininess);
+	assimpMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, diffuse);
+	mat.diffuse = glm::vec3(diffuse.r, diffuse.g, diffuse.b);
 
-	return material;
+	assimpMaterial->Get(AI_MATKEY_COLOR_AMBIENT, ambient);
+	mat.ambient = glm::vec3(ambient.r, ambient.g, ambient.b);
+
+	assimpMaterial->Get(AI_MATKEY_COLOR_SPECULAR, specular);
+	mat.specular = glm::vec3(specular.r, specular.g, specular.b);
+
+	assimpMaterial->Get(AI_MATKEY_COLOR_EMISSIVE, emissive);
+	mat.emissive = glm::vec3(emissive.r, emissive.g, emissive.b);
+
+	assimpMaterial->Get(AI_MATKEY_SHININESS, mat.shininess);
+
+	return mat;
 }
 
 #pragma clang diagnostic pop

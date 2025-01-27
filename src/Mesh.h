@@ -29,11 +29,13 @@ class Mesh
 	std::vector<Vertex> vertex;
 	std::vector<unsigned int> index;
 	std::vector<std::shared_ptr<Texture>> textures;
+	Material material{};
 
   public:
-	Mesh(std::vector<Vertex> vertex, std::vector<unsigned int> index, std::vector<std::shared_ptr<Texture>> textures);
+	Mesh(std::vector<Vertex> vertex, std::vector<unsigned int> index, std::vector<std::shared_ptr<Texture>> textures, const Material &material);
 	void Load();
 	void Render([[maybe_unused]] [[maybe_unused]] const Shader &shader) const;
+	[[nodiscard]] Material *GetMaterial();
 };
 
 #endif // SHADERPLAYGROUND_MESH_H

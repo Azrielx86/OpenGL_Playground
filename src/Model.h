@@ -17,7 +17,7 @@ class Model
 {
   public:
 	explicit Model(const char* path);
-	void Render(const Shader & shader);
+	void Render(Shader & shader);
 	
   private:
 	std::vector<Mesh> meshes;
