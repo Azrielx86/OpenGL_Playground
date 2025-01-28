@@ -28,42 +28,39 @@ uniform Material material;
 
 void main()
 {
-    vec3 matDiff = material.diffuse;
-    
-    if (material.textured)
-    {
-        matDiff = vec3(1.0);
-    }
+    //    vec3 matDiff = material.diffuse;
+    //
+    //    if (material.textured)
+    //    {
+    //        matDiff = vec3(1.0);
+    //    }
 
     //    Ambient
-    //    float ambientStrength = 0.1;
-    //    vec3 ambient = ambientStrength * ambientLightColor;
-    vec3 ambient = material.ambient * ambientLightColor;
+    float ambientStrength = 0.1;
+    vec3 ambient = ambientStrength * ambientLightColor;
+
     //    Diffuse
     vec3 normal = normalize(Normal);
     vec3 lightDir = normalize(lightPos - FragPos);
 
     float diff = max(dot(normal, lightDir), 0.0);
-    //    vec3 diffuse = diff * lightColor;
-    vec3 diffuse = lightColor * (diff * matDiff);
+    vec3 diffuse = lightColor * diff * texture(texture_diffuse, uTexCoords).xyz;
+
     //    Specular
-    //    float specularStrength = 0.5;
     vec3 viewDir = normalize(FragView);
     vec3 reflectDir = reflect(-viewDir, normal);
-    //    float spec = pow(max(dot(viewDir, reflectDir), 0.0f), 32);
     float spec = pow(max(dot(viewDir, reflectDir), 1.0f), material.shininess);
-    //    vec3 specular = specularStrength * spec * lightColor;
-    vec3 specular = lightColor * (spec * material.specular);
+    vec3 specular = lightColor * spec * texture(texture_specular, uTexCoords).xyz;
 
     //    Total color
     vec4 totalColor = vec4((ambient + diffuse + specular), 1.0f);
 
-    if (material.textured)
-    {
-        outColor = texture(texture_diffuse, uTexCoords) * totalColor;
-    }
-    else
-    {
-        outColor = vec4(material.diffuse.xyz, 1.0);
-    }
+    //    if (material.textured)
+    //    {
+    outColor = totalColor;
+    //    }
+    //    else
+    //    {
+    //        outColor = vec4(material.diffuse.xyz, 1.0);
+    //    }
 }

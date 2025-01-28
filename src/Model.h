@@ -5,7 +5,7 @@
 #ifndef SHADERPLAYGROUND_MODEL_H
 #define SHADERPLAYGROUND_MODEL_H
 
-#include "Material.h"
+#include "Resources/Material.h"
 
 #include "Mesh.h"
 #include <assimp/Importer.hpp>
@@ -24,8 +24,8 @@ class Model
 	void LoadModel(const char* path);
 	void LoadNode(const aiNode *pNode, const aiScene *pScene);
 	void LoadMesh(const aiMesh *mesh, [[maybe_unused]] [[maybe_unused]] [[maybe_unused]] const aiScene *scene);
-	static std::vector<std::shared_ptr<Texture>> LoadMaterialTextures(const aiMaterial *material, aiTextureType type);
-	static Material LoadMaterial(const aiMaterial* assimpMaterial);
+	static std::vector<std::shared_ptr<Resources::Texture>> LoadMaterialTextures(const aiMaterial *material, aiTextureType type);
+	static Resources::Material LoadMaterial(const aiMaterial* assimpMaterial);
 };
 
 #endif // SHADERPLAYGROUND_MODEL_H

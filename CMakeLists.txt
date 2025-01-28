@@ -77,14 +77,16 @@ add_executable(ShaderPlayground src/main.cpp
         src/Input/Mouse.cpp
         src/Input/Mouse.h
         src/GlobalDefines.h
-        src/ResourceManager.cpp
-        src/ResourceManager.h
+        src/Resources/ResourceManager.cpp
+        src/Resources/ResourceManager.h
         src/ParticleInstancer.cpp
         src/ParticleInstancer.h
-        src/Material.cpp
-        src/Material.h
+        src/Resources/Material.cpp
+        src/Resources/Material.h
         src/Skybox.cpp
         src/Skybox.h
+        src/Resources/Texture.cpp
+        src/Resources/Texture.h
 )
 
 message(STATUS "Copying shader files.")

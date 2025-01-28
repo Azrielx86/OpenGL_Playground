@@ -9,6 +9,8 @@
 Model::Model(const char *path)
 {
 	LoadModel(path);
+	for (Mesh& mesh : meshes)
+		mesh.Load();
 }
 
 void Model::LoadModel(const char *path)
@@ -37,7 +39,7 @@ void Model::LoadMesh(const aiMesh *mesh, [[maybe_unused]] const aiScene *scene)
 {
 	std::vector<Vertex> vertices(mesh->mNumVertices);
 	std::vector<unsigned int> faces;
-	std::vector<std::shared_ptr<Texture>> textures;
+	std::vector<std::shared_ptr<Resources::Texture>> textures;
 
 	for (unsigned int i = 0; i < mesh->mNumVertices; ++i)
 	{
@@ -60,7 +62,7 @@ void Model::LoadMesh(const aiMesh *mesh, [[maybe_unused]] const aiScene *scene)
 			faces.push_back(face.mIndices[j]);
 	}
 
-	Material material{};
+	Resources::Material material{};
 
 	// if (mesh->mMaterialIndex >= 0)
 	if (scene->mNumMaterials > 0)
@@ -69,36 +71,39 @@ void Model::LoadMesh(const aiMesh *mesh, [[maybe_unused]] const aiScene *scene)
 		auto diffuseMaps = LoadMaterialTextures(mat, aiTextureType_DIFFUSE);
 		auto specularMaps = LoadMaterialTextures(mat, aiTextureType_SPECULAR);
 		auto emissiveMaps = LoadMaterialTextures(mat, aiTextureType_EMISSIVE);
+		auto normalMaps = LoadMaterialTextures(mat, aiTextureType_NORMALS);
 		textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 		textures.insert(textures.end(), emissiveMaps.begin(), emissiveMaps.end());
+		textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
 		material = LoadMaterial(mat);
 		material.textured = !textures.empty();
 	}
 
-	auto nMesh = Mesh(vertices, faces, textures, material);
-	nMesh.Load();
-	meshes.push_back(nMesh);
+	// auto nMesh = Mesh(vertices, faces, textures, material);
+	// nMesh.Load();
+	// meshes.push_back(nMesh);
+	meshes.emplace_back(vertices, faces, textures, material);
 }
 
 void Model::Render(Shader &shader)
 {
 	for (Mesh &mesh : meshes)
 	{
-		const auto material = mesh.GetMaterial();
-		shader.Set<3>("material.ambient", material->ambient);
-		shader.Set<3>("material.diffuse", material->diffuse);
-		shader.Set<3>("material.emissive", material->emissive);
-		shader.Set<3>("material.specular", material->specular);
-		shader.Set("material.shininess", material->shininess);
-		shader.Set("material.textured", material->textured);
+		// const auto material = mesh.GetMaterial();
+		// shader.Set<3>("material.ambient", material->ambient);
+		// shader.Set<3>("material.diffuse", material->diffuse);
+		// shader.Set<3>("material.emissive", material->emissive);
+		// shader.Set<3>("material.specular", material->specular);
+		// shader.Set("material.shininess", material->shininess);
+		// shader.Set("material.textured", material->textured);
 		mesh.Render(shader);
 	}
 }
 
-std::vector<std::shared_ptr<Texture>> Model::LoadMaterialTextures(const aiMaterial *material, const aiTextureType type)
+std::vector<std::shared_ptr<Resources::Texture>> Model::LoadMaterialTextures(const aiMaterial *material, const aiTextureType type)
 {
-	std::vector<std::shared_ptr<Texture>> textures;
+	std::vector<std::shared_ptr<Resources::Texture>> textures;
 	for (unsigned int i = 0; i < material->GetTextureCount(type); ++i)
 	{
 		aiString path;
@@ -113,7 +118,7 @@ std::vector<std::shared_ptr<Texture>> Model::LoadMaterialTextures(const aiMateri
 			continue;
 		}
 		auto texName = results[0].str();
-		auto texture = ResourceManager::GetInstance()->GetTexture(texName);
+		auto texture = Resources::ResourceManager::GetInstance()->GetTexture(texName);
 		texture->type = type;
 		// texture->type = new char[name.length() + 1]{};
 		// memcpy(texture->type, name.c_str(), name.size() + 1);
@@ -122,9 +127,9 @@ std::vector<std::shared_ptr<Texture>> Model::LoadMaterialTextures(const aiMateri
 	return textures;
 }
 
-Material Model::LoadMaterial(const aiMaterial *assimpMaterial)
+Resources::Material Model::LoadMaterial(const aiMaterial *assimpMaterial)
 {
-	Material mat{};
+	Resources::Material mat{};
 	aiColor3D color;
 	aiColor3D diffuse;
 	aiColor3D ambient;

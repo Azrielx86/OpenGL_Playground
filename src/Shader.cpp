@@ -104,5 +104,3 @@ void Shader::Set(const char *name, const int value) const { glUniform1i(glGetUni
 void Shader::Set(const char *name, const bool value) const { glUniform1i(glGetUniformLocation(programId, name), static_cast<int>(value)); }
 
 void Shader::Set(const char *name, const float value) const { glUniform1f(glGetUniformLocation(programId, name), value); }
-
-

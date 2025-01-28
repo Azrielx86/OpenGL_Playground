@@ -5,10 +5,10 @@
 #ifndef SHADERPLAYGROUND_MESH_H
 #define SHADERPLAYGROUND_MESH_H
 
-#include "Material.h"
-#include "ResourceManager.h"
+#include "Resources/Material.h"
+#include "Resources/ResourceManager.h"
+#include "Resources/Texture.h"
 #include "Shader.h"
-#include <array>
 #include <glm/glm.hpp>
 #include <vector>
 
@@ -28,14 +28,15 @@ class Mesh
 
 	std::vector<Vertex> vertex;
 	std::vector<unsigned int> index;
-	std::vector<std::shared_ptr<Texture>> textures;
-	Material material{};
+	std::vector<std::shared_ptr<Resources::Texture>> textures;
+	Resources::Material material{};
 
   public:
-	Mesh(std::vector<Vertex> vertex, std::vector<unsigned int> index, std::vector<std::shared_ptr<Texture>> textures, const Material &material);
+	Mesh(std::vector<Vertex> vertex, std::vector<unsigned int> index, std::vector<std::shared_ptr<Resources::Texture>> textures, const Resources::Material &material);
+	~Mesh();
 	void Load();
 	void Render([[maybe_unused]] [[maybe_unused]] const Shader &shader) const;
-	[[nodiscard]] Material *GetMaterial();
+	[[nodiscard]] Resources::Material *GetMaterial();
 };
 
 #endif // SHADERPLAYGROUND_MESH_H

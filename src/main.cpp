@@ -8,9 +8,8 @@
 #include "Entities/Particle.h"
 #include "Input/Keyboard.h"
 #include "Lights/Light.h"
-#include "Mesh.h"
 #include "Model.h"
-#include "ResourceManager.h"
+#include "Resources/ResourceManager.h"
 #include "Shader.h"
 #include "Skybox.h"
 #include "Window.h"
@@ -27,7 +26,7 @@ bool enableCursor = true;
 
 Input::Keyboard &keyboard = *Input::Keyboard::GetInstance();
 Input::Mouse &mouse = *Input::Mouse::GetInstance();
-ResourceManager &resources = *ResourceManager::GetInstance();
+Resources::ResourceManager &resources = *Resources::ResourceManager::GetInstance();
 
 GLuint particleVAO;
 
@@ -73,7 +72,7 @@ int main()
 	auto particleTexture = resources.GetTexture("particle.png");
 
 	Model turret("./assets/models/turret/source/turret_model.fbx");
-	Model cube("./assets/models/Cube.fbx");
+	Model pod("./assets/models/pod/source/pod.fbx");
 
 	// clang-format off
 	Skybox skybox({
@@ -109,7 +108,7 @@ int main()
 	Lights::Light exampleLight;
 	exampleLight.SetPosition({2.0f, 2.0f, 2.0f});
 	exampleLight.SetColor({1.0f, 1.0f, 1.0f});
-	
+
 	mouse.ToggleMouse(enableCursor);
 	window.SetMouseStatus(enableCursor);
 
@@ -163,22 +162,22 @@ int main()
 
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, {1.0f, 0.0f, 1.0f});
-		model = glm::scale(model, {0.05f, 0.05f, 0.05f});
+		model = glm::scale(model, {0.1f, 0.1f, 0.1f});
 		shader.Set<4, 4>("model", model);
-		cube.Render(shader);
+		pod.Render(shader);
 
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		particleShader.Use();
-		for (const auto &particle : particles)
-		{
-			particleShader.Set<2>("offset", particle.position);
-			particleShader.Set<4>("color", particle.color);
-			glBindTexture(GL_TEXTURE_2D, particleTexture->id);
-			// glBindVertexArray(particleVAO);
-			// glDrawArrays(GL_TRIANGLES, 0, 6);
-			// glBindVertexArray(0);
-		}
+		// glEnable(GL_BLEND);
+		// glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		// particleShader.Use();
+		// for (const auto &particle : particles)
+		// {
+		// 	particleShader.Set<2>("offset", particle.position);
+		// 	particleShader.Set<4>("color", particle.color);
+		// 	glBindTexture(GL_TEXTURE_2D, particleTexture->id);
+		// 	// glBindVertexArray(particleVAO);
+		// 	// glDrawArrays(GL_TRIANGLES, 0, 6);
+		// 	// glBindVertexArray(0);
+		// }
 
 		// glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glDisable(GL_BLEND);
