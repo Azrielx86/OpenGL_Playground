@@ -72,7 +72,8 @@ int main()
 	auto particleTexture = resources.GetTexture("particle.png");
 
 	Model turret("./assets/models/turret/source/turret_model.fbx");
-	Model pod("./assets/models/pod/source/pod.fbx");
+	// Model pod("./assets/models/pod/source/pod.fbx");
+	Model twob("./assets/models/2b/2b.fbx");
 
 	// clang-format off
 	Skybox skybox({
@@ -155,16 +156,20 @@ int main()
 
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, {0.0f, 0.0f, 0.0f});
-		model = glm::rotate(model, static_cast<float>(glfwGetTime()), {0.0f, 1.0f, 0.0f});
+		// model = glm::rotate(model, static_cast<float>(glfwGetTime()), {0.0f, 1.0f, 0.0f});
 		model = glm::scale(model, {0.02f, 0.02f, 0.02f});
 		shader.Set<4, 4>("model", model);
 		turret.Render(shader);
 
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, {1.0f, 0.0f, 1.0f});
-		model = glm::scale(model, {0.1f, 0.1f, 0.1f});
+		model = glm::translate(model, {0.0f, 1.0f, 1.0f});
+		// model = glm::scale(model, {0.1f, 0.1f, 0.1f});
 		shader.Set<4, 4>("model", model);
-		pod.Render(shader);
+		twob.Render(shader);
+		glDisable(GL_BLEND);
 
 		// glEnable(GL_BLEND);
 		// glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -180,14 +185,14 @@ int main()
 		// }
 
 		// glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glDisable(GL_BLEND);
+		// glDisable(GL_BLEND);
 
 		// region gui
 		ImGui::Begin("Camera info");
 		auto camPos = camera.GetPosition();
 		auto camDir = camera.GetDirection();
-		ImGui::Text("%s", std::format("Position: x={} y={} z={}", camPos.x, camPos.y, camPos.z).c_str());
-		ImGui::Text("%s", std::format("Direction: x={} y={} z={}", camDir.x, camDir.y, camDir.z).c_str());
+		ImGui::Text("Position: x=%f y=%f z=%f", static_cast<double>(camPos.x), static_cast<double>(camPos.y), static_cast<double>(camPos.z));
+		ImGui::Text("Direction: x=%f y=%f z=%f", static_cast<double>(camDir.x), static_cast<double>(camDir.y), static_cast<double>(camDir.z));
 		ImGui::Text("Yaw = %f | Pitch = %f", static_cast<double>(camera.GetYaw()), static_cast<double>(camera.GetPitch()));
 		ImGui::End();
 

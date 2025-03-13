@@ -15,6 +15,11 @@ Window::Window(const int width, const int height, const char *name) : height(hei
 
 bool Window::Init()
 {
+	// if (glfwPlatformSupported(GLFW_PLATFORM_WAYLAND))
+	// 	glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
+	// else
+	// 	throw std::runtime_error("Wayland is not supported!");
+
 	if (!glfwInit())
 	{
 		std::cerr << "Cannot create glfw window.\n";
@@ -24,20 +29,23 @@ bool Window::Init()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_SAMPLES, 4);
 
 	window = glfwCreateWindow(width, height, winName, nullptr, nullptr);
 
 	glfwMakeContextCurrent(window);
 	glfwSetWindowUserPointer(window, this);
 
-	if (glewInit() != GLEW_OK)
+	glewExperimental = true;
+	if (const auto glewInitResult = glewInit(); glewInitResult != GLEW_OK)
 	{
-		std::cerr << "Cannot start GLEW.\n";
+		std::cerr << "Cannot start GLEW: " << glewGetErrorString(glewInitResult) << "\n";
 		return false;
 	}
 
 	glViewport(0, 0, width, height);
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_MULTISAMPLE);
 
 	// callbacks
 	glfwSetFramebufferSizeCallback(window, CbkFrameBufferSize);
@@ -45,21 +53,21 @@ bool Window::Init()
 	glfwSetKeyCallback(window, CbkKeyboardInputCallback);
 
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GLFW_FALSE);
-//	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	//	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	// imgui setting
-	
+
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO();
+	ImGuiIO &io = ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 
 	ImGui::StyleColorsDark();
-	
+
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init();
-	
+
 	return true;
 }
 
@@ -113,6 +121,7 @@ void Window::SetMouseStatus(bool enable)
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "readability-convert-member-functions-to-static"
+
 void Window::StartGui()
 {
 	ImGui_ImplOpenGL3_NewFrame();
@@ -125,4 +134,5 @@ void Window::EndGui()
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
+
 #pragma clang diagnostic pop

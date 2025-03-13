@@ -10,17 +10,20 @@ find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(glfw3 REQUIRED)
 find_package(glm REQUIRED)
-#find_package(assimp REQUIRED)
 
-# assimp
-FetchContent_Declare(assimp
-        GIT_REPOSITORY https://github.com/assimp/assimp.git
-        GIT_TAG v5.4.3)
-set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
-set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(ASSIMP_INJECT_DEBUG_POSTFIX OFF CACHE BOOL "" FORCE)
-set(ASSIMP_INSTALL OFF CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(assimp)
+if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+    # assimp
+    FetchContent_Declare(assimp
+            GIT_REPOSITORY https://github.com/assimp/assimp.git
+            GIT_TAG v5.4.3)
+    set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+    set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    set(ASSIMP_INJECT_DEBUG_POSTFIX OFF CACHE BOOL "" FORCE)
+    set(ASSIMP_INSTALL OFF CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(assimp)
+else ()
+    find_package(assimp REQUIRED)
+endif ()
 
 # imgui
 FetchContent_Declare(imgui_external
@@ -28,6 +31,7 @@ FetchContent_Declare(imgui_external
         EXCLUDE_FROM_ALL
 )
 FetchContent_MakeAvailable(imgui_external)
+
 
 add_library(imgui
         ${imgui_external_SOURCE_DIR}/imgui.cpp
@@ -47,9 +51,9 @@ include_directories(${imgui_external_SOURCE_DIR})
 include_directories(${imgui_external_SOURCE_DIR}/backends)
 include_directories("/usr/include/stb")
 
-if (CMAKE_BUILD_TYPE STREQUAL "NoSanitize")
-    add_compile_options(-Wall -Wextra -Wconversion -Wdouble-promotion -Wno-sign-conversion -Wno-unknown-pragmas -Wuninitialized)
-    add_link_options(-Wall -Wextra -Wconversion -Wdouble-promotion -Wno-sign-conversion -Wno-unknown-pragmas -Wuninitialized)
+if (${CMAKE_BUILD_TYPE} STREQUAL "NoSanitize")
+    add_compile_options(-O0 -gfull -DDEBUG -Wall -Wextra -Wconversion -Wdouble-promotion -Wno-sign-conversion -Wno-unknown-pragmas -Wuninitialized)
+    add_link_options(-O0 -gfull -DDEBUG -Wall -Wextra -Wconversion -Wdouble-promotion -Wno-sign-conversion -Wno-unknown-pragmas -Wuninitialized)
 else ()
     add_compile_options(-Wall -Wextra -Wconversion -Wdouble-promotion -Wno-sign-conversion -Wno-unknown-pragmas -Wuninitialized -fsanitize=address,undefined -fsanitize-trap)
     add_link_options(-Wall -Wextra -Wconversion -Wdouble-promotion -Wno-sign-conversion -Wno-unknown-pragmas -Wuninitialized -fsanitize=address,undefined -fsanitize-trap)

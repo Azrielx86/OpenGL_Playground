@@ -23,7 +23,7 @@ void Texture::LoadTexture()
 	unsigned char *data = stbi_load(fullpath, &width, &height, &channels, 0);
 
 	if (!data)
-		throw std::runtime_error(std::format("Canno't load image: {}", fullpath));
+		throw std::runtime_error(std::format("Cant load image: {}", fullpath));
 
 	ResourceManager::mutex.lock();
 

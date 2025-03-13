@@ -44,6 +44,12 @@ void Mesh::Load()
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void *>(offsetof(Vertex, texCoords)));
 	glEnableVertexAttribArray(2);
 
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void *>(offsetof(Vertex, tangent)));
+	glEnableVertexAttribArray(3);
+
+	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void *>(offsetof(Vertex, bitangent)));
+	glEnableVertexAttribArray(4);
+
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
@@ -53,6 +59,7 @@ void Mesh::Load()
 
 void Mesh::Render(const Shader &shader) const
 {
+	glBindTexture(GL_TEXTURE_2D, 0);
 	for (unsigned int i = 0; i < textures.size(); ++i)
 	{
 		const auto texture = textures[i];
@@ -69,7 +76,11 @@ void Mesh::Render(const Shader &shader) const
 		case aiTextureType_EMISSIVE:
 			name = "texture_emissive";
 			break;
+		case aiTextureType_NORMALS:
+			name = "texture_normal";
+			break;
 		default:;
+			continue;
 		}
 
 		shader.Set(name.c_str(), static_cast<int>(i));
@@ -83,7 +94,13 @@ void Mesh::Render(const Shader &shader) const
 	glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(index.size()), GL_UNSIGNED_INT, nullptr);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
-	glBindTexture(GL_TEXTURE_2D, 0);
+
+	for (unsigned int i = 0; i < textures.size(); ++i)
+	{
+		glActiveTexture(GL_TEXTURE0 + i);
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
+	glActiveTexture(GL_TEXTURE0);
 }
 
 Resources::Material *Mesh::GetMaterial()

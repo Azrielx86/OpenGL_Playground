@@ -9,14 +9,14 @@
 Model::Model(const char *path)
 {
 	LoadModel(path);
-	for (Mesh& mesh : meshes)
+	for (Mesh &mesh : meshes)
 		mesh.Load();
 }
 
 void Model::LoadModel(const char *path)
 {
 	auto importer = Assimp::Importer();
-	const auto aiScene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_JoinIdenticalVertices);
+	const auto aiScene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_JoinIdenticalVertices | aiProcess_CalcTangentSpace);
 
 	if (!aiScene || aiScene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !aiScene->mRootNode)
 	{
@@ -44,10 +44,14 @@ void Model::LoadMesh(const aiMesh *mesh, [[maybe_unused]] const aiScene *scene)
 	for (unsigned int i = 0; i < mesh->mNumVertices; ++i)
 	{
 		auto meshVertex = mesh->mVertices[i];
+		auto meshTangents = mesh->mTangents[i];
+		auto meshBitangents = mesh->mBitangents[i];
 		Vertex vertex{
 		    .position = {meshVertex.x, meshVertex.y, meshVertex.z},
 		    .normal = {mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z},
-		    .texCoords = {0.0f, 0.0f}};
+		    .texCoords = {0.0f, 0.0f},
+		    .tangent = {meshTangents.x, meshTangents.y, meshTangents.z},
+		    .bitangent = {meshBitangents.x, meshBitangents.y, meshBitangents.z}};
 		if (mesh->mTextureCoords[0])
 			vertex.texCoords = {mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y};
 
@@ -110,7 +114,7 @@ std::vector<std::shared_ptr<Resources::Texture>> Model::LoadMaterialTextures(con
 		material->GetTexture(type, i, &path);
 
 		std::cmatch results;
-		std::regex_search(path.C_Str(), results, std::regex(R"([^\\]+\.\w+$)"));
+		std::regex_search(path.C_Str(), results, std::regex(R"([^\/]+\.\w+$)"));
 
 		if (results.empty())
 		{
@@ -120,8 +124,6 @@ std::vector<std::shared_ptr<Resources::Texture>> Model::LoadMaterialTextures(con
 		auto texName = results[0].str();
 		auto texture = Resources::ResourceManager::GetInstance()->GetTexture(texName);
 		texture->type = type;
-		// texture->type = new char[name.length() + 1]{};
-		// memcpy(texture->type, name.c_str(), name.size() + 1);
 		textures.push_back(texture);
 	}
 	return textures;

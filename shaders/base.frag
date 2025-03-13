@@ -5,6 +5,7 @@ in vec2 uTexCoords;
 in vec3 FragPos;
 in vec3 FragView;
 in vec3 Normal;
+in mat3 TBN;
 
 uniform vec3 ambientLightColor;
 uniform vec3 lightColor;
@@ -13,6 +14,7 @@ uniform vec3 lightPos;
 uniform sampler2D texture_diffuse;
 uniform sampler2D texture_specular;
 uniform sampler2D texture_emissive;
+uniform sampler2D texture_normal;
 
 struct Material {
     vec3 baseColor;
@@ -28,21 +30,16 @@ uniform Material material;
 
 void main()
 {
-    //    vec3 matDiff = material.diffuse;
-    //
-    //    if (material.textured)
-    //    {
-    //        matDiff = vec3(1.0);
-    //    }
-
     //    Ambient
-    float ambientStrength = 0.1;
+    float ambientStrength = 0.1f;
     vec3 ambient = ambientStrength * ambientLightColor;
 
-    //    Diffuse
-    vec3 normal = normalize(Normal);
-    vec3 lightDir = normalize(lightPos - FragPos);
+    vec3 normal = texture(texture_normal, uTexCoords).rgb;
+    normal = normal * 2.0f - 1.0f;
+    normal = normalize(TBN * normal);
 
+    //    Diffuse
+    vec3 lightDir = normalize(lightPos - FragPos);
     float diff = max(dot(normal, lightDir), 0.0);
     vec3 diffuse = lightColor * diff * texture(texture_diffuse, uTexCoords).xyz;
 
@@ -50,17 +47,11 @@ void main()
     vec3 viewDir = normalize(FragView);
     vec3 reflectDir = reflect(-viewDir, normal);
     float spec = pow(max(dot(viewDir, reflectDir), 1.0f), material.shininess);
-    vec3 specular = lightColor * spec * texture(texture_specular, uTexCoords).xyz;
+//    vec3 specular = lightColor * spec * texture(texture_specular, uTexCoords).xyz;
+    vec3 specular = lightColor * spec * vec3(0.0);
 
     //    Total color
-    vec4 totalColor = vec4((ambient + diffuse + specular), 1.0f);
+    vec4 totalColor = vec4((ambient + diffuse + specular), texture(texture_diffuse, uTexCoords).a);
 
-    //    if (material.textured)
-    //    {
     outColor = totalColor;
-    //    }
-    //    else
-    //    {
-    //        outColor = vec4(material.diffuse.xyz, 1.0);
-    //    }
 }
