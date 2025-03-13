@@ -68,6 +68,7 @@ int main()
 	}
 
 	resources.ScanResources();
+	resources.InitDefaultResources();
 
 	auto particleTexture = resources.GetTexture("particle.png");
 
@@ -156,7 +157,6 @@ int main()
 
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, {0.0f, 0.0f, 0.0f});
-		// model = glm::rotate(model, static_cast<float>(glfwGetTime()), {0.0f, 1.0f, 0.0f});
 		model = glm::scale(model, {0.02f, 0.02f, 0.02f});
 		shader.Set<4, 4>("model", model);
 		turret.Render(shader);
@@ -166,6 +166,7 @@ int main()
 
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, {0.0f, 1.0f, 1.0f});
+		model = glm::rotate(model, static_cast<float>(glfwGetTime()), {0.0f, 1.0f, 0.0f});
 		// model = glm::scale(model, {0.1f, 0.1f, 0.1f});
 		shader.Set<4, 4>("model", model);
 		twob.Render(shader);

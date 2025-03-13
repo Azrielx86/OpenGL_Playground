@@ -31,7 +31,7 @@ uniform Material material;
 void main()
 {
     //    Ambient
-    float ambientStrength = 0.1f;
+    float ambientStrength = 0.0f;
     vec3 ambient = ambientStrength * ambientLightColor;
 
     vec3 normal = texture(texture_normal, uTexCoords).rgb;
@@ -47,8 +47,8 @@ void main()
     vec3 viewDir = normalize(FragView);
     vec3 reflectDir = reflect(-viewDir, normal);
     float spec = pow(max(dot(viewDir, reflectDir), 1.0f), material.shininess);
-//    vec3 specular = lightColor * spec * texture(texture_specular, uTexCoords).xyz;
-    vec3 specular = lightColor * spec * vec3(0.0);
+    vec3 specular = lightColor * spec * texture(texture_specular, uTexCoords).xyz;
+//    vec3 specular = lightColor * spec * vec3(0.0);
 
     //    Total color
     vec4 totalColor = vec4((ambient + diffuse + specular), texture(texture_diffuse, uTexCoords).a);

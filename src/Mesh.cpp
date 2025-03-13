@@ -60,34 +60,56 @@ void Mesh::Load()
 void Mesh::Render(const Shader &shader) const
 {
 	glBindTexture(GL_TEXTURE_2D, 0);
-	for (unsigned int i = 0; i < textures.size(); ++i)
+	unsigned int texture_idx = 0;
+	unsigned int enabled_textures = 0;
+	const auto defaultResources = Resources::ResourceManager::GetInstance()->GetDefaultResources();
+	for (texture_idx = 0; texture_idx < textures.size(); ++texture_idx)
 	{
-		const auto texture = textures[i];
+		const auto texture = textures[texture_idx];
 
 		std::string name{};
 		switch (texture->type)
 		{
 		case aiTextureType_DIFFUSE:
 			name = "texture_diffuse";
+			enabled_textures |= DIFFUSE;
 			break;
 		case aiTextureType_SPECULAR:
 			name = "texture_specular";
+			enabled_textures |= SPECULAR;
 			break;
 		case aiTextureType_EMISSIVE:
 			name = "texture_emissive";
+			enabled_textures |= EMISSION;
 			break;
 		case aiTextureType_NORMALS:
 			name = "texture_normal";
+			enabled_textures |= NORMAL;
 			break;
 		default:;
 			continue;
 		}
 
-		shader.Set(name.c_str(), static_cast<int>(i));
-		glActiveTexture(GL_TEXTURE0 + i);
+		shader.Set(name.c_str(), static_cast<int>(texture_idx));
+		glActiveTexture(GL_TEXTURE0 + texture_idx);
 		glBindTexture(GL_TEXTURE_2D, texture->id);
 	}
-	// glActiveTexture(GL_TEXTURE0);
+
+	if ((enabled_textures & NORMAL) == 0)
+	{
+		shader.Set("texture_normal", static_cast<int>(texture_idx));
+		glActiveTexture(GL_TEXTURE0 + texture_idx);
+		glBindTexture(GL_TEXTURE_2D, defaultResources.normal);
+		texture_idx++;
+	}
+
+	if ((enabled_textures & SPECULAR) == 0)
+	{
+		shader.Set("texture_specular", static_cast<int>(texture_idx));
+		glActiveTexture(GL_TEXTURE0 + texture_idx);
+		glBindTexture(GL_TEXTURE_2D, defaultResources.specular);
+		texture_idx++;
+	}
 
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
@@ -95,7 +117,7 @@ void Mesh::Render(const Shader &shader) const
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
-	for (unsigned int i = 0; i < textures.size(); ++i)
+	for (unsigned int i = 0; i < texture_idx; ++i)
 	{
 		glActiveTexture(GL_TEXTURE0 + i);
 		glBindTexture(GL_TEXTURE_2D, 0);

@@ -36,6 +36,14 @@ struct string_hash
 	}
 };
 
+struct DefaultResources
+{
+	unsigned int diffuse = 0;
+	unsigned int normal = 0;
+	unsigned int emission = 0;
+	unsigned int specular = 0;
+};
+
 class ResourceManager
 {
 	std::string resourcesPath = "assets";
@@ -46,14 +54,17 @@ class ResourceManager
 	static std::unique_ptr<ResourceManager> instance;
 	// ~ResourceManager();
 	static std::mutex mutex;
+	static DefaultResources defaultResources;
 
   public:
+	static DefaultResources GetDefaultResources();
 	std::shared_ptr<Texture> GetTexture(const std::string &filename) const;
 	ResourceManager(ResourceManager &) = delete;
 	ResourceManager operator=(ResourceManager &) = delete;
 	static ResourceManager *GetInstance();
 	void ScanResources();
 	void LoadTextures();
+	static void InitDefaultResources();
 	void SetResourcesPath(const char *newPath);
 	[[nodiscard]] const char *GetResourcesPath() const;
 

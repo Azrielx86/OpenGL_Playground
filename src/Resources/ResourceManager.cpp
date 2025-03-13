@@ -13,10 +13,11 @@
 
 namespace Resources
 {
-
 std::unique_ptr<ResourceManager> ResourceManager::instance = nullptr;
 
 std::mutex ResourceManager::mutex;
+
+DefaultResources ResourceManager::defaultResources{};
 
 ResourceManager *ResourceManager::GetInstance()
 {
@@ -52,9 +53,6 @@ void ResourceManager::ScanResources()
 
 void ResourceManager::LoadTextures()
 {
-	// for (const auto &texture : textures)
-	// 	texture.second->LoadTexture();
-
 	std::for_each(std::execution::par_unseq,
 	              textures.begin(),
 	              textures.end(),
@@ -65,6 +63,34 @@ void ResourceManager::LoadTextures()
 	              });
 }
 
+void ResourceManager::InitDefaultResources()
+{
+	// Default normal
+	std::array<uint8_t, 4> data = {255, 255, 255, 255};
+	glGenTextures(1, &defaultResources.normal);
+	glBindTexture(GL_TEXTURE_2D, defaultResources.normal);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, data.data());
+
+	// Defatult spacular
+	data = {0, 0, 0, 0};
+	glGenTextures(1, &defaultResources.specular);
+	glBindTexture(GL_TEXTURE_2D, defaultResources.specular);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, data.data());
+	// TODO : Generate default textures
+}
+
 void ResourceManager::SetResourcesPath(const char *newPath)
 {
 	resourcesPath = newPath;
@@ -73,6 +99,11 @@ void ResourceManager::SetResourcesPath(const char *newPath)
 const char *ResourceManager::GetResourcesPath() const
 {
 	return resourcesPath.c_str();
+}
+
+DefaultResources ResourceManager::GetDefaultResources()
+{
+	return defaultResources;
 }
 
 std::shared_ptr<Texture> ResourceManager::GetTexture(const std::string &filename) const

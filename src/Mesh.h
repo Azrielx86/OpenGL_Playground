@@ -23,6 +23,15 @@ typedef struct vertex
 
 class Mesh
 {
+  public:
+	enum HAS_TEXTURE
+	{
+		DIFFUSE = 0b0001,
+		NORMAL = 0b0010,
+		SPECULAR = 0b0100,
+		EMISSION = 0b1000
+	};
+
   private:
 	unsigned int VAO{};
 	unsigned int VBO{};

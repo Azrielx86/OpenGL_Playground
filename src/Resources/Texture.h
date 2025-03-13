@@ -22,7 +22,6 @@ public:
 	[[nodiscard]] bool IsLoaded() const;
 
 	~Texture();
-	;
 };
 } // Resources
 
