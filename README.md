@@ -1,4 +1,4 @@
-# Shader Playground
+# OpenGL Playground
 
 This is just a program to practice some stuff of OpenGL.
 
