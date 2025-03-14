@@ -95,8 +95,10 @@ int main()
 	particleShader.LoadShader("../shaders/particle_shader.vert", "../shaders/particle_shader.frag");
 	Shader skyboxShader{};
 	skyboxShader.LoadShader("../shaders/skybox_shader.vert", "../shaders/skybox_shader.frag");
-	Shader screenShader{};
-	screenShader.LoadShader("../shaders/blur.vert", "../shaders/blur.frag");
+	Shader blurShader{};
+	blurShader.LoadShader("../shaders/blur.vert", "../shaders/blur.frag");
+	Shader sharpShader{};
+	sharpShader.LoadShader("../shaders/sharp.vert", "../shaders/sharp.frag");
 #else
 	Shader shader{};
 	shader.LoadShader("./shaders/base.vert", "./shaders/base.frag");
@@ -104,12 +106,34 @@ int main()
 	particleShader.LoadShader("./shaders/particle_shader.vert", "./shaders/particle_shader.frag");
 	Shader skyboxShader{};
 	skyboxShader.LoadShader("./shaders/skybox_shader.vert", "./shaders/skybox_shader.frag");
-	Shader screenShader{};
-	screenShader.LoadShader("./shaders/blur.vert", "./shaders/blur.frag");
+	Shader blurShader{};
+	blurShader.LoadShader("./shaders/blur.vert", "./shaders/blur.frag");
+	Shader sharpShader{};
+	sharpShader.LoadShader("./shaders/sharp.vert", "./shaders/sharp.frag");
 #endif
 
-	Framebuffer blurFramebuffer(screenShader, window.GetWidth(), window.GetHeight());
+	Framebuffer blurFramebuffer(blurShader, window.GetWidth(), window.GetHeight());
+	Framebuffer sharpFramebuffer(sharpShader, window.GetWidth(), window.GetHeight());
 
+	window.AddFramebuffer(&blurFramebuffer);
+	window.AddFramebuffer(&sharpFramebuffer);
+
+	// region Framebuffers
+	enum Framebuffers
+	{
+		BLUR = 0,
+		SHARP = 1
+	};
+
+	std::unordered_map<int, Framebuffer *> framebuffers;
+	framebuffers[Framebuffers::BLUR] = &blurFramebuffer;
+	framebuffers[Framebuffers::SHARP] = &sharpFramebuffer;
+
+	const char *fbItems[]{"Blur", "Sharp"};
+	int fbSelectedItem = 0;
+	bool enableEffects = false;
+	Framebuffer* selectedEffect = framebuffers[Framebuffers::BLUR];
+	// endregion
 
 	Camera camera({2.0f, 2.0f, 2.0f}, {0.0f, 1.0f, 0.0f});
 	camera.SetInput(Input::Keyboard::GetInstance(), Input::Mouse::GetInstance());
@@ -139,7 +163,17 @@ int main()
 		deltaTime = now - lastTime;
 		lastTime = now;
 
-		blurFramebuffer.BeginRender();
+		if (enableEffects)
+		{
+			selectedEffect->BeginRender();
+		}
+		else
+		{
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			glEnable(GL_DEPTH_TEST);
+		}
 
 		window.StartGui();
 
@@ -186,13 +220,21 @@ int main()
 		ImGui::Text("Yaw = %f | Pitch = %f", static_cast<double>(camera.GetYaw()), static_cast<double>(camera.GetPitch()));
 		ImGui::End();
 
-		ImGui::Begin("Render data");
+		ImGui::Begin("Engine Info and Settings");
 		ImGui::Text("Delta time = %f", static_cast<double>(deltaTime));
+		ImGui::Checkbox("Enable effects", &enableEffects);
+		if (ImGui::Combo("Shader", &fbSelectedItem, fbItems, IM_ARRAYSIZE(fbItems)))
+		{
+			selectedEffect = framebuffers[fbSelectedItem];
+		}
 		ImGui::End();
 		// endregion
 
-		Framebuffer::EnableMainFramebuffer();
-		blurFramebuffer.RenderQuad();
+		if (enableEffects)
+		{
+			Framebuffer::EnableMainFramebuffer();
+			selectedEffect->RenderQuad();
+		}
 
 		keyboard.HandleKeyLoop();
 
