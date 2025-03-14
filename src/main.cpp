@@ -99,6 +99,8 @@ int main()
 	blurShader.LoadShader("../shaders/blur.vert", "../shaders/blur.frag");
 	Shader sharpShader{};
 	sharpShader.LoadShader("../shaders/sharp.vert", "../shaders/sharp.frag");
+	Shader grayscaleShader{};
+	grayscaleShader.LoadShader("../shaders/grayscale.vert", "../shaders/grayscale.frag");
 #else
 	Shader shader{};
 	shader.LoadShader("./shaders/base.vert", "./shaders/base.frag");
@@ -110,29 +112,35 @@ int main()
 	blurShader.LoadShader("./shaders/blur.vert", "./shaders/blur.frag");
 	Shader sharpShader{};
 	sharpShader.LoadShader("./shaders/sharp.vert", "./shaders/sharp.frag");
+	Shader grayscaleShader{};
+	grayscaleShader.LoadShader("./shaders/grayscale.vert", "./shaders/grayscale.frag");
 #endif
 
 	Framebuffer blurFramebuffer(blurShader, window.GetWidth(), window.GetHeight());
 	Framebuffer sharpFramebuffer(sharpShader, window.GetWidth(), window.GetHeight());
+	Framebuffer grayscaleFramebuffer(grayscaleShader, window.GetWidth(), window.GetHeight());
 
 	window.AddFramebuffer(&blurFramebuffer);
 	window.AddFramebuffer(&sharpFramebuffer);
+	window.AddFramebuffer(&grayscaleFramebuffer);
 
 	// region Framebuffers
 	enum Framebuffers
 	{
 		BLUR = 0,
-		SHARP = 1
+		SHARP = 1,
+		GRAYSCALE = 2
 	};
 
 	std::unordered_map<int, Framebuffer *> framebuffers;
 	framebuffers[Framebuffers::BLUR] = &blurFramebuffer;
 	framebuffers[Framebuffers::SHARP] = &sharpFramebuffer;
+	framebuffers[Framebuffers::GRAYSCALE] = &grayscaleFramebuffer;
 
-	const char *fbItems[]{"Blur", "Sharp"};
+	const char *fbItems[]{"Blur", "Sharp", "Grayscale"};
 	int fbSelectedItem = 0;
 	bool enableEffects = false;
-	Framebuffer* selectedEffect = framebuffers[Framebuffers::BLUR];
+	Framebuffer *selectedEffect = framebuffers[Framebuffers::BLUR];
 	// endregion
 
 	Camera camera({2.0f, 2.0f, 2.0f}, {0.0f, 1.0f, 0.0f});
