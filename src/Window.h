@@ -5,6 +5,9 @@
 #ifndef SHADERPLAYGROUND_WINDOW_H
 #define SHADERPLAYGROUND_WINDOW_H
 
+#include "Framebuffer.h"
+
+#include "Framebuffer.h"
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <memory>
@@ -12,6 +15,8 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+
+#include <vector>
 
 class Window
 {
@@ -26,13 +31,16 @@ class Window
 	void StartGui();
 	void EndGui();
 	~Window();
+	[[nodiscard]] int GetHeight() const;
+	[[nodiscard]] int GetWidth() const;
+	void AddFramebuffer(Framebuffer* fb);
 
   private:
 	int height;
 	int width;
 	const char *winName;
 	GLFWwindow *window;
-	bool cursorEnable = true;
+	std::vector<Framebuffer*> buffers;
 	static void CbkFrameBufferSize([[maybe_unused]] GLFWwindow *window, int width, int height);
 	static void CbkMouseCallback([[maybe_unused]] [[maybe_unused]] GLFWwindow *window, double xpos, double ypos);
 	static void CbkKeyboardInputCallback([[maybe_unused]] GLFWwindow *window, int key, [[maybe_unused]] int code, int action, [[maybe_unused]] int mode);

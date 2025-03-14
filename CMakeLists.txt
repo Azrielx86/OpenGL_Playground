@@ -91,6 +91,8 @@ add_executable(ShaderPlayground src/main.cpp
         src/Skybox.h
         src/Resources/Texture.cpp
         src/Resources/Texture.h
+        src/Framebuffer.cpp
+        src/Framebuffer.h
 )
 
 message(STATUS "Copying shader files.")

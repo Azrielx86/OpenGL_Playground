@@ -68,7 +68,7 @@ int main()
 	}
 
 	resources.ScanResources();
-	resources.InitDefaultResources();
+	Resources::ResourceManager::InitDefaultResources();
 
 	auto particleTexture = resources.GetTexture("particle.png");
 
@@ -95,6 +95,8 @@ int main()
 	particleShader.LoadShader("../shaders/particle_shader.vert", "../shaders/particle_shader.frag");
 	Shader skyboxShader{};
 	skyboxShader.LoadShader("../shaders/skybox_shader.vert", "../shaders/skybox_shader.frag");
+	Shader screenShader{};
+	screenShader.LoadShader("../shaders/blur.vert", "../shaders/blur.frag");
 #else
 	Shader shader{};
 	shader.LoadShader("./shaders/base.vert", "./shaders/base.frag");
@@ -102,7 +104,12 @@ int main()
 	particleShader.LoadShader("./shaders/particle_shader.vert", "./shaders/particle_shader.frag");
 	Shader skyboxShader{};
 	skyboxShader.LoadShader("./shaders/skybox_shader.vert", "./shaders/skybox_shader.frag");
+	Shader screenShader{};
+	screenShader.LoadShader("./shaders/blur.vert", "./shaders/blur.frag");
 #endif
+
+	Framebuffer blurFramebuffer(screenShader, window.GetWidth(), window.GetHeight());
+
 
 	Camera camera({2.0f, 2.0f, 2.0f}, {0.0f, 1.0f, 0.0f});
 	camera.SetInput(Input::Keyboard::GetInstance(), Input::Mouse::GetInstance());
@@ -132,8 +139,8 @@ int main()
 		deltaTime = now - lastTime;
 		lastTime = now;
 
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		blurFramebuffer.BeginRender();
+
 		window.StartGui();
 
 		camera.Move(deltaTime);
@@ -151,7 +158,6 @@ int main()
 		shader.Set<4, 4>("view", view);
 		shader.Set<4, 4>("projection", projection);
 		shader.Set<3>("ambientLightColor", glm::vec3{1.0f, 1.0f, 1.0f});
-		// shader.Set<3>("lightColor", RGBCOLOR(147, 112, 219));
 		shader.Set<3>("lightColor", exampleLight.GetColor());
 		shader.Set<3>("lightPos", exampleLight.GetPosition());
 
@@ -167,26 +173,9 @@ int main()
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, {0.0f, 1.0f, 1.0f});
 		model = glm::rotate(model, static_cast<float>(glfwGetTime()), {0.0f, 1.0f, 0.0f});
-		// model = glm::scale(model, {0.1f, 0.1f, 0.1f});
 		shader.Set<4, 4>("model", model);
 		twob.Render(shader);
 		glDisable(GL_BLEND);
-
-		// glEnable(GL_BLEND);
-		// glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		// particleShader.Use();
-		// for (const auto &particle : particles)
-		// {
-		// 	particleShader.Set<2>("offset", particle.position);
-		// 	particleShader.Set<4>("color", particle.color);
-		// 	glBindTexture(GL_TEXTURE_2D, particleTexture->id);
-		// 	// glBindVertexArray(particleVAO);
-		// 	// glDrawArrays(GL_TRIANGLES, 0, 6);
-		// 	// glBindVertexArray(0);
-		// }
-
-		// glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		// glDisable(GL_BLEND);
 
 		// region gui
 		ImGui::Begin("Camera info");
@@ -201,6 +190,9 @@ int main()
 		ImGui::Text("Delta time = %f", static_cast<double>(deltaTime));
 		ImGui::End();
 		// endregion
+
+		Framebuffer::EnableMainFramebuffer();
+		blurFramebuffer.RenderQuad();
 
 		keyboard.HandleKeyLoop();
 

@@ -76,6 +76,11 @@ void Window::CbkFrameBufferSize([[maybe_unused]] GLFWwindow *window, int width, 
 	auto pWindow = static_cast<Window *>(glfwGetWindowUserPointer(window));
 	glViewport(0, 0, width, height);
 	glfwGetFramebufferSize(window, &pWindow->width, &pWindow->height);
+
+	for (Framebuffer* buffer : pWindow->buffers)
+	{
+		buffer->CreateFramebuffer(width, height);
+	}
 }
 
 bool Window::ShouldClose()
@@ -95,6 +100,15 @@ Window::~Window()
 	ImGui::DestroyContext();
 	glfwDestroyWindow(window);
 	glfwTerminate();
+}
+
+int Window::GetHeight() const { return height; }
+
+int Window::GetWidth() const { return width; }
+
+void Window::AddFramebuffer(Framebuffer *fb)
+{
+	buffers.push_back(fb);
 }
 
 void Window::CbkMouseCallback([[maybe_unused]] GLFWwindow *window, double xpos, double ypos)

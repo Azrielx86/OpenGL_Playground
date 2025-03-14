@@ -11,7 +11,7 @@ And some other things that I wanted to do in my [Computer Graphics Final Project
 - [x] Normal mapping
 - [ ] Parallax mapping
 - [ ] Shadows
-- [ ] Using Framebuffers
+- [x] Using Framebuffers
 - [ ] Bloom effect
 - [ ] Blur effect
 - [ ] Fresnel effect
