@@ -13,9 +13,12 @@ And some other things that I wanted to do in my [Computer Graphics Final Project
 - [ ] Shadows
 - [x] Using Framebuffers
 - [ ] Bloom effect
-- [ ] Blur effect
+- [ ] Motion Blur effect
 - [ ] Fresnel effect
 - [ ] SSAO
 - [ ] Grid floor generated in shader
 - [ ] Particle system
 
+## Things that I added on the fly
+
+- Framebuffer effects enable/disable and change.
