@@ -11,7 +11,7 @@ find_package(GLEW REQUIRED)
 find_package(glfw3 REQUIRED)
 find_package(glm REQUIRED)
 
-if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     # assimp
     FetchContent_Declare(assimp
             GIT_REPOSITORY https://github.com/assimp/assimp.git
@@ -51,7 +51,7 @@ include_directories(${imgui_external_SOURCE_DIR})
 include_directories(${imgui_external_SOURCE_DIR}/backends)
 include_directories("/usr/include/stb")
 
-if (${CMAKE_BUILD_TYPE} STREQUAL "NoSanitize")
+if (CMAKE_BUILD_TYPE STREQUAL "NoSanitize")
     add_compile_options(-O0 -gfull -DDEBUG -Wall -Wextra -Wconversion -Wdouble-promotion -Wno-sign-conversion -Wno-unknown-pragmas -Wuninitialized)
     add_link_options(-O0 -gfull -DDEBUG -Wall -Wextra -Wconversion -Wdouble-promotion -Wno-sign-conversion -Wno-unknown-pragmas -Wuninitialized)
 else ()
@@ -59,7 +59,7 @@ else ()
     add_link_options(-Wall -Wextra -Wconversion -Wdouble-promotion -Wno-sign-conversion -Wno-unknown-pragmas -Wuninitialized -fsanitize=address,undefined -fsanitize-trap)
 endif ()
 
-if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     message(STATUS "Compiling Debug version.")
     add_compile_options(-O0 -gfull -DDEBUG)
 else ()

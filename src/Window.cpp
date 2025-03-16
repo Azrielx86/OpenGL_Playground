@@ -15,14 +15,15 @@ Window::Window(const int width, const int height, const char *name) : height(hei
 
 bool Window::Init()
 {
-	// if (glfwPlatformSupported(GLFW_PLATFORM_WAYLAND))
-	// 	glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
-	// else
-	// 	throw std::runtime_error("Wayland is not supported!");
+	const char *errorLog = nullptr;
+	if (glfwPlatformSupported(GLFW_PLATFORM_WAYLAND))
+		glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
 
 	if (!glfwInit())
 	{
-		std::cerr << "Cannot create glfw window.\n";
+		glfwGetError(&errorLog);
+		std::cerr << "Cannot create glfw window: " << errorLog << "\n";
+		glfwTerminate();
 		return false;
 	}
 
@@ -37,7 +38,7 @@ bool Window::Init()
 	glfwSetWindowUserPointer(window, this);
 
 	glewExperimental = true;
-	if (const auto glewInitResult = glewInit(); glewInitResult != GLEW_OK)
+	if (const auto glewInitResult = glewInit(); glewInitResult != GLEW_OK && glewInitResult != GLEW_ERROR_NO_GLX_DISPLAY)
 	{
 		std::cerr << "Cannot start GLEW: " << glewGetErrorString(glewInitResult) << "\n";
 		return false;
