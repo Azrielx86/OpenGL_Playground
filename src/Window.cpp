@@ -15,12 +15,9 @@ Window::Window(const int width, const int height, const char *name) : height(hei
 
 bool Window::Init()
 {
-	const char *errorLog = nullptr;
-	if (glfwPlatformSupported(GLFW_PLATFORM_WAYLAND))
-		glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
-
 	if (!glfwInit())
 	{
+		const char *errorLog = nullptr;
 		glfwGetError(&errorLog);
 		std::cerr << "Cannot create glfw window: " << errorLog << "\n";
 		glfwTerminate();
