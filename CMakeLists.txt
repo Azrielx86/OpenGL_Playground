@@ -111,8 +111,6 @@ add_executable(ShaderPlayground src/main.cpp
         src/Lights/Light.h
         src/Framebuffer.cpp
         src/Framebuffer.h
-        src/Resources/Primitive.cpp
-        src/Resources/Primitive.h
 )
 
 message(STATUS "Copying shader files.")

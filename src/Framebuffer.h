@@ -4,7 +4,6 @@
 
 #ifndef FRAMEBUFFER_H
 #define FRAMEBUFFER_H
-#include "Resources/Primitive.h"
 #include "Shader.h"
 
 #include <memory>
@@ -14,8 +13,10 @@ class Framebuffer
 	unsigned int fbo = 0;
 	unsigned int textureId = 0;
 	unsigned int rbo = 0;
+	unsigned int vao = 0;
+	unsigned int vbo = 0;
 	std::unique_ptr<Shader> shader;
-	Resources::Primitive plane;
+	static float quadVertices[];
 
   public:
 	Framebuffer(Shader &shader, int width, int height);
