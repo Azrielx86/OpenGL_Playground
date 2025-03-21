@@ -7,6 +7,7 @@
 
 #include <functional>
 #include <memory>
+#include <array>
 #include <unordered_map>
 
 namespace Input

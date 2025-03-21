@@ -4,6 +4,8 @@
 
 #include "ResourceManager.h"
 #include "../GlobalDefines.h"
+
+#include <array>
 #include <cstring>
 #include <execution>
 #include <filesystem>
@@ -32,7 +34,7 @@ void ResourceManager::ScanResources()
 		if (file.is_directory()) continue;
 		std::string path = file.path().string();
 		std::cmatch results;
-		std::regex_search(path.c_str(), results, std::regex("[^/]+\\.\\w+$"));
+		std::regex_search(path.c_str(), results, std::regex("[^/|\\\\]+\\.\\w+$"));
 
 		if (results.size() != 1)
 			std::cerr << "Unexpected behavior on file scanning\n";

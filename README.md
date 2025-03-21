@@ -22,3 +22,6 @@ And some other things that I wanted to do in my [Computer Graphics Final Project
 ## Things that I added on the fly
 
 - Framebuffer effects enable/disable and change.
+
+>[!NOTE]
+>Requires vcpkg to build on Windows

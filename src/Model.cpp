@@ -157,5 +157,3 @@ Resources::Material Model::LoadMaterial(const aiMaterial *assimpMaterial)
 
 	return mat;
 }
-
-#pragma clang diagnostic pop

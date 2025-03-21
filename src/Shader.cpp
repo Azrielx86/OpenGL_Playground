@@ -31,10 +31,20 @@ void Shader::LoadShader(const char *vertexShader, const char *fragmentShader)
 	auto fragStr = ReadFile(fragmentShader);
 
 	vertexCode = new char[vertexStr.size() + 1];
+#if WIN32
+	strcpy_s(vertexCode, vertexStr.size() + 1, vertexStr.c_str());
+#else
 	std::strcpy(vertexCode, vertexStr.c_str());
+#endif
+
 
 	fragmentCode = new char[fragStr.size() + 1];
+#if WIN32
+	strcpy_s(fragmentCode, fragStr.size() + 1, fragStr.c_str());
+#else
 	std::strcpy(fragmentCode, fragStr.c_str());
+#endif
+
 
 	CompileProgram();
 
