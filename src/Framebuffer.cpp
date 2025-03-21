@@ -4,41 +4,14 @@
 
 #include "Framebuffer.h"
 
-// clang-format off
-float Framebuffer::quadVertices[] = {
-	// positions   // texCoords
-	-1.0f,  1.0f,  0.0f, 1.0f,
-	-1.0f,  -1.0f,  0.0f, 0.0f,
-	 1.0f,  -1.0f,  1.0f, 0.0f,
+#include "Resources/Primitive.h"
+#include "Resources/ResourceManager.h"
 
-	-1.0f,  1.0f,  0.0f, 1.0f,
-	 1.0f,  1.0f,  1.0f, 1.0f,
-	 1.0f,  -1.0f,  1.0f, 0.0f
-};
-// clang-format on
-
-Framebuffer::Framebuffer(Shader &shader, const int width, const int height)
+Framebuffer::Framebuffer(Shader &shader, const int width, const int height) : plane(Resources::Primitive::planeVertices, Resources::Primitive::planeVerticesSize, Resources::Primitive::planeIndexes, Resources::Primitive::planeIndexesSize)
 {
 	this->shader = std::make_unique<Shader>(shader);
 
 	CreateFramebuffer(width, height);
-
-	glGenVertexArrays(1, &vao);
-	glGenBuffers(1, &vbo);
-
-	glBindVertexArray(vao);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-
-	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), static_cast<void *>(0));
-
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), reinterpret_cast<void *>(sizeof(float) * 2));
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
 }
 
 Framebuffer::~Framebuffer()
@@ -63,11 +36,9 @@ void Framebuffer::EnableMainFramebuffer()
 
 void Framebuffer::RenderQuad() const
 {
-	shader->Use();
-	glBindVertexArray(vao);
 	glDisable(GL_DEPTH_TEST);
 	glBindTexture(GL_TEXTURE_2D, textureId);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	plane.Render(*shader);
 }
 
 void Framebuffer::CreateFramebuffer(const int width, const int height)
