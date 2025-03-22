@@ -75,7 +75,7 @@ if (UNIX)
     endif ()
 endif ()
 
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+if (CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "NoSanitize")
     message(STATUS "Compiling Debug version.")
     add_compile_options(-O0 -gfull -DDEBUG)
 else ()

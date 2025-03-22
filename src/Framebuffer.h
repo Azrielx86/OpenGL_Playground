@@ -26,6 +26,7 @@ class Framebuffer
 	void RenderQuad() const;
 	void CreateFramebuffer(int width, int height);
 	void DestroyFramebuffer() const;
+	void ReloadShader() const;
 };
 
 #endif // FRAMEBUFFER_H

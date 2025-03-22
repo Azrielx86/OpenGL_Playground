@@ -23,12 +23,70 @@ float deltaTime, lastTime;
 float red = 0.0f;
 bool enableCursorEvent = true;
 bool enableCursor = true;
+bool enableGrid = true;
+
+float fpsCounter = 0;
+float fpsCount = 0;
+float fps = 0;
 
 Input::Keyboard &keyboard = *Input::Keyboard::GetInstance();
 Input::Mouse &mouse = *Input::Mouse::GetInstance();
 Resources::ResourceManager &resources = *Resources::ResourceManager::GetInstance();
 
 GLuint particleVAO;
+
+struct SingleMesh
+{
+	GLuint vao = 0;
+	GLuint vbo = 0;
+	GLuint ibo = 0;
+	GLint indexCount = 0;
+
+	void Render() const
+	{
+		glBindVertexArray(vao);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+		glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
+	}
+};
+
+SingleMesh plane;
+
+void CreateSimpleMeshes()
+{
+	// clang-format off
+	 constexpr float planeVertices[] = {
+		-1.0, 0.0, -1.0,
+		1.0, 0.0, -1.0,
+		1.0, 0.0, 1.0,
+		-1.0, 0.0, 1.0,
+	};
+
+	const unsigned int planeIndices[] = {0, 2, 1, 2, 0, 3};
+	// clang-format on
+
+	glGenVertexArrays(1, &plane.vao);
+	glBindVertexArray(plane.vao);
+
+	glGenBuffers(1, &plane.vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, plane.vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), &planeVertices, GL_STATIC_DRAW);
+
+	glGenBuffers(1, &plane.ibo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, plane.ibo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(planeIndices), &planeIndices, GL_STATIC_DRAW);
+
+	plane.indexCount = 6;
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, static_cast<void *>(0));
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+}
 
 void ConfigureKeys(Window &window)
 {
@@ -101,6 +159,8 @@ int main()
 	sharpShader.LoadShader("../shaders/sharp.vert", "../shaders/sharp.frag");
 	Shader grayscaleShader{};
 	grayscaleShader.LoadShader("../shaders/grayscale.vert", "../shaders/grayscale.frag");
+	Shader gridShader{};
+	gridShader.LoadShader("../shaders/infinite_grid.vert", "../shaders/infinite_grid.frag");
 #else
 	Shader shader{};
 	shader.LoadShader("./shaders/base.vert", "./shaders/base.frag");
@@ -114,6 +174,8 @@ int main()
 	sharpShader.LoadShader("./shaders/sharp.vert", "./shaders/sharp.frag");
 	Shader grayscaleShader{};
 	grayscaleShader.LoadShader("./shaders/grayscale.vert", "./shaders/grayscale.frag");
+	Shader gridShader{};
+	gridShader.LoadShader("./shaders/infinite_grid.vert", "./shaders/infinite_grid.frag");
 #endif
 
 	Framebuffer blurFramebuffer(blurShader, window.GetWidth(), window.GetHeight());
@@ -145,6 +207,8 @@ int main()
 
 	Camera camera({2.0f, 2.0f, 2.0f}, {0.0f, 1.0f, 0.0f});
 	camera.SetInput(Input::Keyboard::GetInstance(), Input::Mouse::GetInstance());
+	camera.SetMoveSpeed(1.5f);
+	camera.SetTurnSpeed(1.0f);
 
 	Lights::Light exampleLight;
 	exampleLight.SetPosition({2.0f, 2.0f, 2.0f});
@@ -160,6 +224,7 @@ int main()
 		particles.emplace_back();
 
 	ConfigureKeys(window);
+	CreateSimpleMeshes();
 
 	glm::mat4 view;
 	glm::mat4 projection;
@@ -170,6 +235,18 @@ int main()
 		auto now = static_cast<float>(glfwGetTime());
 		deltaTime = now - lastTime;
 		lastTime = now;
+
+		if (fpsCounter <= 1)
+		{
+			fpsCounter += deltaTime;
+			fpsCount++;
+		}
+		else
+		{
+			fps = fpsCount;
+			fpsCounter = 0;
+			fpsCount = 0;
+		}
 
 		if (enableEffects)
 		{
@@ -190,11 +267,11 @@ int main()
 		view = camera.GetLookAt();
 		projection = glm::perspective(glm::radians(45.0f), window.GetAspect(), 0.1f, 100.0f);
 
-		skybox
-		    .BeginRender(skyboxShader)
-		    .SetProjection(projection)
-		    .SetView(view)
-		    .Render();
+		// skybox
+		//     .BeginRender(skyboxShader)
+		//     .SetProjection(projection)
+		//     .SetView(view)
+		//     .Render();
 
 		shader.Use();
 		shader.Set<4, 4>("view", view);
@@ -213,10 +290,21 @@ int main()
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, {0.0f, 1.0f, 1.0f});
+		model = glm::translate(model, {0.0f, 0.0f, 1.0f});
 		model = glm::rotate(model, static_cast<float>(glfwGetTime()), {0.0f, 1.0f, 0.0f});
+		model = glm::scale(model, {0.8f, 0.8f, 0.8f});
 		shader.Set<4, 4>("model", model);
 		twob.Render(shader);
+
+		if (enableGrid)
+		{
+			gridShader.Use();
+			gridShader.Set<4, 4>("uVP", projection * view);
+			gridShader.Set<3>("cameraPosition", camera.GetPosition());
+			plane.Render();
+			shader.Use();
+		}
+
 		glDisable(GL_BLEND);
 
 		// region gui
@@ -230,10 +318,24 @@ int main()
 
 		ImGui::Begin("Engine Info and Settings");
 		ImGui::Text("Delta time = %f", static_cast<double>(deltaTime));
+		ImGui::Text("FPS = %f", fps);
+		ImGui::Checkbox("Enable Grid", &enableGrid);
 		ImGui::Checkbox("Enable effects", &enableEffects);
 		if (ImGui::Combo("Shader", &fbSelectedItem, fbItems, IM_ARRAYSIZE(fbItems)))
 		{
 			selectedEffect = framebuffers[fbSelectedItem];
+		}
+
+		ImGui::SeparatorText("Shader reload");
+		if (ImGui::Button("Effect shader") && enableEffects)
+		{
+			selectedEffect->ReloadShader();
+			std::cout << "Effect shader reloaded\n";
+		}
+		if (ImGui::Button("Grid shader"))
+		{
+			gridShader.ReloadShader();
+			std::cout << "Grid shader reloaded!\n";
 		}
 		ImGui::End();
 		// endregion

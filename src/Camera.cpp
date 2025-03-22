@@ -60,6 +60,10 @@ glm::mat4 Camera::GetLookAt()
 	return glm::lookAt(position, position + front, up);
 }
 
+void Camera::SetMoveSpeed(const float moveSpeed) { this->moveSpeed = moveSpeed; }
+
+void Camera::SetTurnSpeed(const float turnSpeed) { this->turnSpeed = turnSpeed; }
+
 float Camera::GetPitch() const
 {
 	return pitch;

@@ -110,3 +110,8 @@ void Framebuffer::DestroyFramebuffer() const
 	if (rbo != 0)
 		glDeleteRenderbuffers(1, &rbo);
 }
+
+void Framebuffer::ReloadShader() const
+{
+	shader->ReloadShader();
+}

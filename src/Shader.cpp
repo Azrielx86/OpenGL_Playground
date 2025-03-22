@@ -14,7 +14,7 @@ std::string Shader::ReadFile(const char *file)
 	std::ifstream ifstream(file, std::ios::in);
 
 	if (!ifstream.is_open())
-		throw std::runtime_error(std::format("Canno't open file: {}.", file));
+		throw std::runtime_error(std::format("Can't open file: {}.", file));
 
 	while (!ifstream.eof())
 	{
@@ -27,6 +27,13 @@ std::string Shader::ReadFile(const char *file)
 
 void Shader::LoadShader(const char *vertexShader, const char *fragmentShader)
 {
+	if (!firstLoad)
+	{
+		vertexPath = vertexShader;
+		fragmentPath = fragmentShader;
+		firstLoad = true;
+	}
+
 	auto vertexStr = ReadFile(vertexShader);
 	auto fragStr = ReadFile(fragmentShader);
 
@@ -37,7 +44,6 @@ void Shader::LoadShader(const char *vertexShader, const char *fragmentShader)
 	std::strcpy(vertexCode, vertexStr.c_str());
 #endif
 
-
 	fragmentCode = new char[fragStr.size() + 1];
 #if WIN32
 	strcpy_s(fragmentCode, fragStr.size() + 1, fragStr.c_str());
@@ -45,11 +51,23 @@ void Shader::LoadShader(const char *vertexShader, const char *fragmentShader)
 	std::strcpy(fragmentCode, fragStr.c_str());
 #endif
 
-
 	CompileProgram();
 
 	delete[] vertexCode;
 	delete[] fragmentCode;
+}
+
+void Shader::DestroyShader()
+{
+	if (programId != 0) glDeleteProgram(programId);
+	programId = 0;
+}
+
+void Shader::ReloadShader()
+{
+	if (programId == 0) return;
+	DestroyShader();
+	LoadShader(vertexPath.c_str(), fragmentPath.c_str());
 }
 
 void Shader::CompileProgram()

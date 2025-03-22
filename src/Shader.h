@@ -15,6 +15,8 @@ class Shader
 {
   public:
 	void LoadShader(const char *vertexShader, const char *fragmentShader);
+	void DestroyShader();
+	void ReloadShader();
 	void Use() const;
 	void Set(const char *name, int value) const;
 	void Set(const char *name, bool value) const;
@@ -33,6 +35,9 @@ class Shader
 	GLuint programId = 0;
 	char *vertexCode = nullptr;
 	char *fragmentCode = nullptr;
+	std::string vertexPath;
+	std::string fragmentPath;
+	bool firstLoad = false;
 
 	void CompileProgram();
 	static GLuint CompileShader(GLuint program, const char *shaderCode, GLenum type);

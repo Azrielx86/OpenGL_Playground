@@ -24,9 +24,9 @@ class Camera
 	float moveSpeed;
 	float turnSpeed;
 
-	Input::Keyboard* keyboard{};
-	Input::Mouse* mouse{};
-	
+	Input::Keyboard *keyboard{};
+	Input::Mouse *mouse{};
+
   public:
 	Camera(glm::vec3 startPosition, glm::vec3 startUp, float startYaw = -90.0f, float startPitch = 0.0f, float moveSpeed = 0.7f, float turnSpeed = 0.5f);
 	void SetInput(Input::Keyboard *kb, Input::Mouse *ms);
@@ -37,6 +37,8 @@ class Camera
 	glm::vec3 GetPosition();
 	glm::vec3 GetDirection();
 	glm::mat4 GetLookAt();
+	void SetMoveSpeed(float moveSpeed);
+	void SetTurnSpeed(float turnSpeed);
 };
 
 #endif // SHADERPLAYGROUND_CAMERA_H
