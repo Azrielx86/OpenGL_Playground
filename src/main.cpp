@@ -35,6 +35,14 @@ Resources::ResourceManager &resources = *Resources::ResourceManager::GetInstance
 
 GLuint particleVAO;
 
+struct Uniforms
+{
+	GLint model = 0;
+};
+
+Uniforms uniforms{};
+
+// TODO : Do this in a better way... (Grid exclusive class)
 struct SingleMesh
 {
 	GLuint vao = 0;
@@ -81,7 +89,7 @@ void CreateSimpleMeshes()
 	plane.indexCount = 6;
 
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, static_cast<void *>(0));
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, static_cast<void *>(nullptr));
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -274,6 +282,8 @@ int main()
 		//     .Render();
 
 		shader.Use();
+		uniforms.model = shader.GetUniform("model");
+
 		shader.Set<4, 4>("view", view);
 		shader.Set<4, 4>("projection", projection);
 		shader.Set<3>("ambientLightColor", glm::vec3{1.0f, 1.0f, 1.0f});
@@ -283,7 +293,7 @@ int main()
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, {0.0f, 0.0f, 0.0f});
 		model = glm::scale(model, {0.02f, 0.02f, 0.02f});
-		shader.Set<4, 4>("model", model);
+		shader.Set<4, 4>(uniforms.model, model);
 		turret.Render(shader);
 
 		glEnable(GL_BLEND);
@@ -293,7 +303,7 @@ int main()
 		model = glm::translate(model, {0.0f, 0.0f, 1.0f});
 		model = glm::rotate(model, static_cast<float>(glfwGetTime()), {0.0f, 1.0f, 0.0f});
 		model = glm::scale(model, {0.8f, 0.8f, 0.8f});
-		shader.Set<4, 4>("model", model);
+		shader.Set<4, 4>(uniforms.model, model);
 		twob.Render(shader);
 
 		if (enableGrid)
@@ -318,7 +328,7 @@ int main()
 
 		ImGui::Begin("Engine Info and Settings");
 		ImGui::Text("Delta time = %f", static_cast<double>(deltaTime));
-		ImGui::Text("FPS = %f", fps);
+		ImGui::Text("FPS = %f", static_cast<double>(fps));
 		ImGui::Checkbox("Enable Grid", &enableGrid);
 		ImGui::Checkbox("Enable effects", &enableEffects);
 		if (ImGui::Combo("Shader", &fbSelectedItem, fbItems, IM_ARRAYSIZE(fbItems)))

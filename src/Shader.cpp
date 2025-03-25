@@ -132,3 +132,11 @@ void Shader::Set(const char *name, const int value) const { glUniform1i(glGetUni
 void Shader::Set(const char *name, const bool value) const { glUniform1i(glGetUniformLocation(programId, name), static_cast<int>(value)); }
 
 void Shader::Set(const char *name, const float value) const { glUniform1f(glGetUniformLocation(programId, name), value); }
+
+void Shader::Set(const GLint id, const int value) const { glUniform1i(id, value); }
+
+void Shader::Set(const GLint id, const bool value) const { glUniform1i(id, static_cast<int>(value)); }
+
+void Shader::Set(const GLint id, const float value) const { glUniform1f(id, value); }
+
+GLint Shader::GetUniform(const char *name) const { return glGetUniformLocation(programId, name); }
