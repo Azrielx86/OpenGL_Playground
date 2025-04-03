@@ -29,28 +29,8 @@ ResourceManager *ResourceManager::GetInstance()
 
 void ResourceManager::ScanResources()
 {
-	for (const auto &file : std::filesystem::recursive_directory_iterator(resourcesPath))
-	{
-		if (file.is_directory()) continue;
-		std::string path = file.path().string();
-		std::cmatch results;
-		std::regex_search(path.c_str(), results, std::regex("[^/|\\\\]+\\.\\w+$"));
-
-		if (results.size() != 1)
-			std::cerr << "Unexpected behavior on file scanning\n";
-
-		auto filename = results[0].str();
-
-		if (std::regex_search(path, std::regex("\\.(jpe?g|png)$")))
-		{
-			const auto texture = std::make_shared<Texture>();
-			texture->fullpath = new char[path.size() + 1],
-			texture->filename = new char[filename.size() + 1];
-			memcpy(texture->fullpath, path.c_str(), path.size() + 1);
-			memcpy(texture->filename, filename.c_str(), filename.size() + 1);
-			textures[filename] = texture;
-		}
-	}
+	ScanTextures();
+	ScanShaders();
 }
 
 void ResourceManager::LoadTextures()
@@ -103,6 +83,78 @@ const char *ResourceManager::GetResourcesPath() const
 	return resourcesPath.c_str();
 }
 
+void ResourceManager::ScanTextures()
+{
+	for (const auto &file : std::filesystem::recursive_directory_iterator(resourcesPath))
+	{
+		if (file.is_directory()) continue;
+		std::string path = file.path().string();
+		std::cmatch results;
+		std::regex_search(path.c_str(), results, std::regex(R"([^/|\\]+\.\w+$)"));
+
+		if (results.size() != 1)
+			std::cerr << "Unexpected behavior on file scanning\n";
+
+		auto filename = results[0].str();
+
+		if (std::regex_search(path, std::regex("\\.(jpe?g|png)$")))
+		{
+			const auto texture = std::make_shared<Texture>();
+			texture->fullpath = new char[path.size() + 1],
+			texture->filename = new char[filename.size() + 1];
+			memcpy(texture->fullpath, path.c_str(), path.size() + 1);
+			memcpy(texture->filename, filename.c_str(), filename.size() + 1);
+			textures[filename] = texture;
+		}
+	}
+}
+
+void ResourceManager::ScanShaders()
+{
+	for (const auto &file : std::filesystem::recursive_directory_iterator(shadersPath))
+	{
+		if (file.is_directory()) continue;
+
+		std::string path = file.path().string();
+		std::cmatch results;
+		std::regex_search(path.c_str(), results, std::regex(R"([^/|\\]+\.\w+$)"));
+
+		if (results.size() != 1)
+		{
+			std::cerr << "File is not valid\n";
+			continue;
+		}
+
+		std::string extPattern = R"(vert|frag|geom|tese|tesc|comp)";
+		std::string replacePattern = R"((^.*[/|\\]+)|(\.()" + extPattern + ")$)";
+		if (std::regex_search(path, std::regex(extPattern)))
+		{
+			std::string shaderName = std::regex_replace(path, std::regex(replacePattern), "");
+			std::shared_ptr<Shader> shader;
+			if (!shaders.contains(shaderName))
+			{
+				shader = std::make_shared<Shader>();
+				shader->CreateProgram();
+				shaders[shaderName] = shader;
+			}
+			else
+				shader = shaders[shaderName];
+
+			std::regex_search(path.c_str(), results, std::regex(extPattern + "$"));
+			if (results.size() != 1)
+			{
+				std::cerr << "File is not valid\n";
+				continue;
+			}
+			const auto extension = results[0].str();
+
+			const auto type = ShaderTypeConverter::FromExtension(extension.c_str());
+
+			shader->AttachShader(path.c_str(), type);
+		}
+	}
+}
+
 DefaultResources ResourceManager::GetDefaultResources()
 {
 	return defaultResources;
@@ -114,5 +166,13 @@ std::shared_ptr<Texture> ResourceManager::GetTexture(const std::string &filename
 	if (!tex->IsLoaded())
 		tex->LoadTexture();
 	return tex;
+}
+
+std::shared_ptr<Shader> ResourceManager::GetShader(const std::string &shaderName) const
+{
+	auto shader = shaders.at(shaderName);
+	if (!shader->IsLinked())
+		shader->LinkProgram();
+	return shader;
 }
 } // namespace Resources

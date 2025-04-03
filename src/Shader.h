@@ -10,14 +10,38 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <string>
+#include <vector>
+
+enum ShaderType
+{
+	VERTEX = 0x01,
+	FRAGMENT = 0x02,
+	GEOMETRY = 0x04
+	// Add the others later...
+};
+
+class ShaderTypeConverter
+{
+public:
+	static GLenum ToGlenum(ShaderType type);
+	static ShaderType FromExtension(const char* ext);
+	// static std::string ToString(ShaderType type);
+};
 
 class Shader
 {
   public:
+	/**
+	 * @deprecated Use AttachShader() and Load() instead
+	 */
 	void LoadShader(const char *vertexShader, const char *fragmentShader);
 	void DestroyShader();
 	void ReloadShader();
 	void Use() const;
+
+	Shader &CreateProgram();
+	Shader &AttachShader(const char *path, ShaderType shaderType);
+	void LinkProgram();
 
 	/**
 	 * Sets an integer value in the shader.
@@ -80,6 +104,8 @@ class Shader
 	template <unsigned int size_x, unsigned int size_y>
 	void Set(GLint id, const glm::mat<size_x, size_y, float> &matrix);
 
+	[[nodiscard]] bool IsLinked() const;
+
   private:
 	GLuint programId = 0;
 	char *vertexCode = nullptr;
@@ -87,6 +113,9 @@ class Shader
 	std::string vertexPath;
 	std::string fragmentPath;
 	bool firstLoad = false;
+	bool isLinked = false;
+	unsigned int shaderTypes = 0;
+	std::vector<std::pair<unsigned int, std::string>> shadersAttached;
 
 	void CompileProgram();
 	static GLuint CompileShader(GLuint program, const char *shaderCode, GLenum type);
