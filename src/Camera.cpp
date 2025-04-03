@@ -29,6 +29,10 @@ void Camera::Move(float deltaTime)
 		position -= right * velocity;
 	if (keyboard->GetKeyPress(GLFW_KEY_D))
 		position += right * velocity;
+	if (keyboard->GetKeyPress(GLFW_KEY_E))
+		position.y += 1.0f * velocity;
+	if (keyboard->GetKeyPress(GLFW_KEY_Q))
+		position.y -= 1.0f * velocity;
 
 	yaw += (float) mouse->GetChangex() * turnSpeed;
 	pitch += (float) mouse->GetChangey() * turnSpeed;

@@ -282,7 +282,7 @@ int main()
 		//     .Render();
 
 		shader.Use();
-		uniforms.model = shader.GetUniform("model");
+		uniforms.model = shader.GetUniformLocation("model");
 
 		shader.Set<4, 4>("view", view);
 		shader.Set<4, 4>("projection", projection);

@@ -18,17 +18,53 @@ class Shader
 	void DestroyShader();
 	void ReloadShader();
 	void Use() const;
+
+	/**
+	 * Sets an integer value in the shader.
+	 * @param name Uniform name
+	 * @param value Value to send
+	 */
 	void Set(const char *name, int value) const;
+
+	/**
+	 * Sets a boolean value in the shader.
+	 * @param name Uniform name
+	 * @param value Value to send
+	 */
 	void Set(const char *name, bool value) const;
+
+	/**
+	 * Sets a float value in the shader.
+	 * @param name Uniform name
+	 * @param value Value to send
+	 */
 	void Set(const char *name, float value) const;
 	void Set(GLint id, int value) const;
 	void Set(GLint id, bool value) const;
 	void Set(GLint id, float value) const;
-	[[nodiscard]] GLint GetUniform(const char *name) const;
 
+	/**
+	 * Gets a uniform id from the shader.
+	 * @param name Uniform name
+	 * @return Uniform id
+	 */
+	[[nodiscard]] GLint GetUniformLocation(const char *name) const;
+
+	/**
+	 * Sets a int <size> vector in the shader.
+	 * @tparam size Vector Size
+	 * @param name Uniform name
+	 * @param vector Vector to send
+	 */
 	template <unsigned int size>
 	void Set(const char *name, const glm::vec<size, int> &vector);
 
+	/**
+	 * Sets a float vector in the shader
+	 * @tparam size Vector size.
+	 * @param name Uniform name
+	 * @param vector Vector to send
+	 */
 	template <unsigned int size>
 	void Set(const char *name, const glm::vec<size, float> &vector);
 

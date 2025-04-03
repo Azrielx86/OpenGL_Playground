@@ -51,6 +51,7 @@ class ResourceManager
 	//	std::vector<std::shared_ptr<Texture>> textures;
 	std::unordered_map<std::string, std::shared_ptr<Texture>, string_hash> textures;
 	std::unordered_map<std::string, std::string, string_hash> models;
+	std::unordered_map<std::string, std::string, string_hash> shaders;
 	ResourceManager() = default;
 	static std::unique_ptr<ResourceManager> instance;
 	// ~ResourceManager();

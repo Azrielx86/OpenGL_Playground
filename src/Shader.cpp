@@ -139,4 +139,5 @@ void Shader::Set(const GLint id, const bool value) const { glUniform1i(id, stati
 
 void Shader::Set(const GLint id, const float value) const { glUniform1f(id, value); }
 
-GLint Shader::GetUniform(const char *name) const { return glGetUniformLocation(programId, name); }
+GLint Shader::GetUniformLocation(const char *name) const { return glGetUniformLocation(programId, name); }
+
