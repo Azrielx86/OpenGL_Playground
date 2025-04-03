@@ -51,38 +51,6 @@ ShaderType ShaderTypeConverter::FromExtension(const char *ext)
 	throw std::runtime_error(std::format("Unsupported shader extension: {}", ext));
 }
 
-void Shader::LoadShader(const char *vertexShader, const char *fragmentShader)
-{
-	if (!firstLoad)
-	{
-		vertexPath = vertexShader;
-		fragmentPath = fragmentShader;
-		firstLoad = true;
-	}
-
-	auto vertexStr = ReadFile(vertexShader);
-	auto fragStr = ReadFile(fragmentShader);
-
-	vertexCode = new char[vertexStr.size() + 1];
-#if WIN32
-	strcpy_s(vertexCode, vertexStr.size() + 1, vertexStr.c_str());
-#else
-	std::strcpy(vertexCode, vertexStr.c_str());
-#endif
-
-	fragmentCode = new char[fragStr.size() + 1];
-#if WIN32
-	strcpy_s(fragmentCode, fragStr.size() + 1, fragStr.c_str());
-#else
-	std::strcpy(fragmentCode, fragStr.c_str());
-#endif
-
-	CompileProgram();
-
-	delete[] vertexCode;
-	delete[] fragmentCode;
-}
-
 void Shader::DestroyShader()
 {
 	if (programId != 0) glDeleteProgram(programId);
@@ -102,36 +70,6 @@ void Shader::ReloadShader()
 	}
 
 	LinkProgram();
-}
-
-void Shader::CompileProgram()
-{
-	programId = glCreateProgram();
-	if (!programId)
-		throw std::runtime_error("Canno't create GL program.");
-
-	CompileShader(programId, vertexCode, GL_VERTEX_SHADER);
-	CompileShader(programId, fragmentCode, GL_FRAGMENT_SHADER);
-
-	GLint result;
-	GLchar log[1024] = {0};
-
-	glLinkProgram(programId);
-	glGetProgramiv(programId, GL_LINK_STATUS, &result);
-	if (!result)
-	{
-		glGetProgramInfoLog(programId, sizeof(log), nullptr, log);
-		throw std::runtime_error(std::format("Error: {}", log));
-	}
-
-	glValidateProgram(programId);
-	glGetProgramiv(programId, GL_VALIDATE_STATUS, &result);
-
-	if (!result)
-	{
-		glGetProgramInfoLog(programId, sizeof(log), nullptr, log);
-		throw std::runtime_error(std::format("Error: {}", log));
-	}
 }
 
 GLuint Shader::CompileShader(const GLuint program, const char *shaderCode, const GLenum type)

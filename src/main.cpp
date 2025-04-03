@@ -170,37 +170,6 @@ int main()
 	grayscaleShader = *resources.GetShader("grayscale");
 	gridShader = *resources.GetShader("infinite_grid");
 
-	// #ifdef DEBUG
-	// shader.LoadShader("../shaders/base.vert", "../shaders/base.frag");
-	// 	Shader particleShader{};
-	// 	particleShader.LoadShader("../shaders/particle_shader.vert", "../shaders/particle_shader.frag");
-	// 	Shader skyboxShader{};
-	// 	skyboxShader.LoadShader("../shaders/skybox_shader.vert", "../shaders/skybox_shader.frag");
-	// 	Shader blurShader{};
-	// 	blurShader.LoadShader("../shaders/blur.vert", "../shaders/blur.frag");
-	// 	Shader sharpShader{};
-	// 	sharpShader.LoadShader("../shaders/sharp.vert", "../shaders/sharp.frag");
-	// 	Shader grayscaleShader{};
-	// 	grayscaleShader.LoadShader("../shaders/grayscale.vert", "../shaders/grayscale.frag");
-	// 	Shader gridShader{};
-	// 	gridShader.LoadShader("../shaders/infinite_grid.vert", "../shaders/infinite_grid.frag");
-	// #else
-	// 	Shader shader{};
-	// 	shader.LoadShader("./shaders/base.vert", "./shaders/base.frag");
-	// 	Shader particleShader{};
-	// 	particleShader.LoadShader("./shaders/particle_shader.vert", "./shaders/particle_shader.frag");
-	// 	Shader skyboxShader{};
-	// 	skyboxShader.LoadShader("./shaders/skybox_shader.vert", "./shaders/skybox_shader.frag");
-	// 	Shader blurShader{};
-	// 	blurShader.LoadShader("./shaders/blur.vert", "./shaders/blur.frag");
-	// 	Shader sharpShader{};
-	// 	sharpShader.LoadShader("./shaders/sharp.vert", "./shaders/sharp.frag");
-	// 	Shader grayscaleShader{};
-	// 	grayscaleShader.LoadShader("./shaders/grayscale.vert", "./shaders/grayscale.frag");
-	// 	Shader gridShader{};
-	// 	gridShader.LoadShader("./shaders/infinite_grid.vert", "./shaders/infinite_grid.frag");
-	// #endif
-
 	Framebuffer blurFramebuffer(blurShader, window.GetWidth(), window.GetHeight());
 	Framebuffer sharpFramebuffer(sharpShader, window.GetWidth(), window.GetHeight());
 	Framebuffer grayscaleFramebuffer(grayscaleShader, window.GetWidth(), window.GetHeight());

@@ -31,10 +31,6 @@ public:
 class Shader
 {
   public:
-	/**
-	 * @deprecated Use AttachShader() and Load() instead
-	 */
-	void LoadShader(const char *vertexShader, const char *fragmentShader);
 	void DestroyShader();
 	void ReloadShader();
 	void Use() const;
@@ -108,10 +104,6 @@ class Shader
 
   private:
 	GLuint programId = 0;
-	char *vertexCode = nullptr;
-	char *fragmentCode = nullptr;
-	std::string vertexPath;
-	std::string fragmentPath;
 	bool firstLoad = false;
 	bool isLinked = false;
 	unsigned int shaderTypes = 0;
