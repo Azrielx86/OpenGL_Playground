@@ -7,7 +7,9 @@
 #include "Camera.h"
 #include "Entities/Particle.h"
 #include "Input/Keyboard.h"
+#include "Lights/Directional.h"
 #include "Lights/Light.h"
+#include "Lights/LightCollection.h"
 #include "Model.h"
 #include "Resources/ResourceManager.h"
 #include "Shader.h"
@@ -206,6 +208,12 @@ int main()
 	exampleLight.SetPosition({2.0f, 2.0f, 2.0f});
 	exampleLight.SetColor({1.0f, 1.0f, 1.0f});
 
+	Lights::LightCollection<Lights::Light> lights(shader, 2);
+	lights
+	    .Add(Lights::Light({1.0f, 1.0f, 1.0f}, {5.0f, 5.0f, 5.0f}))
+	    .Add(Lights::Light({1.0f, 0.0f, 0.0f}, {0.0f, 5.0f, -5.0f}))
+	    .UpdateActiveLights();
+
 	mouse.ToggleMouse(enableCursor);
 	window.SetMouseStatus(enableCursor);
 
@@ -268,11 +276,14 @@ int main()
 		shader.Use();
 		uniforms.model = shader.GetUniformLocation("model");
 
+		std::cout << shader.GetUniformLocation("lightsCount") << "\n";
+		lights.UpdateActiveLights();
+
 		shader.Set<4, 4>("view", view);
 		shader.Set<4, 4>("projection", projection);
 		shader.Set<3>("ambientLightColor", glm::vec3{1.0f, 1.0f, 1.0f});
-		shader.Set<3>("lightColor", exampleLight.GetColor());
-		shader.Set<3>("lightPos", exampleLight.GetPosition());
+		shader.Set<3>("lightColor", glm::vec3{1.0f, 1.0f, 1.0f});
+		shader.Set<3>("lightPos", glm::vec3{5.0f, 5.0f, 5.0f});
 
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, {0.0f, 0.0f, 0.0f});

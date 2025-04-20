@@ -162,6 +162,16 @@ void Shader::Set(const GLint id, const float value) const { glUniform1f(id, valu
 
 GLint Shader::GetUniformLocation(const char *name) const { return glGetUniformLocation(programId, name); }
 
+GLuint Shader::GetProgramResourceIndex(const char *dataName) const
+{
+	return glGetProgramResourceIndex(programId, GL_SHADER_STORAGE_BLOCK, dataName);
+}
+
+void Shader::StorageBlockBinding(const unsigned int blockIndex, const unsigned int bindingPointIndex) const
+{
+	glShaderStorageBlockBinding(programId, blockIndex, bindingPointIndex);
+}
+
 bool Shader::IsLinked() const
 {
 	return isLinked;

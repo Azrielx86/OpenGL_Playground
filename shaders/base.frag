@@ -1,5 +1,28 @@
 #version 430
 
+struct Light
+{
+    vec3 position;
+    vec3 color;
+};
+
+struct DirectionalLight
+{
+    vec3 position;
+    vec3 color;
+    vec3 direction;
+};
+
+struct Material {
+    vec3 baseColor;
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+    vec3 emissive;
+    float shininess;
+    bool textured;
+};
+
 out vec4 outColor;
 in vec2 uTexCoords;
 in vec3 FragPos;
@@ -11,19 +34,16 @@ uniform vec3 ambientLightColor;
 uniform vec3 lightColor;
 uniform vec3 lightPos;
 
+uniform int lightsCount;
+
 uniform sampler2D texture_diffuse;
 uniform sampler2D texture_specular;
 uniform sampler2D texture_emissive;
 uniform sampler2D texture_normal;
 
-struct Material {
-    vec3 baseColor;
-    vec3 ambient;
-    vec3 diffuse;
-    vec3 specular;
-    vec3 emissive;
-    float shininess;
-    bool textured;
+layout (std430, binding = 2) buffer lights
+{
+    Light lightsArray[];
 };
 
 uniform Material material;
@@ -48,7 +68,13 @@ void main()
     vec3 reflectDir = reflect(-viewDir, normal);
     float spec = pow(max(dot(viewDir, reflectDir), 1.0f), material.shininess);
     vec3 specular = lightColor * spec * texture(texture_specular, uTexCoords).xyz;
-//    vec3 specular = lightColor * spec * vec3(0.0);
+    //    vec3 specular = lightColor * spec * vec3(0.0);
+
+    diffuse = vec3(0.0f);
+    for (int i = 0; i < lightsCount; i++)
+    {
+        diffuse = lightsArray[i].color;
+    }
 
     //    Total color
     vec4 totalColor = vec4((ambient + diffuse + specular), texture(texture_diffuse, uTexCoords).a);

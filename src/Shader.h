@@ -69,6 +69,8 @@ class Shader
 	 * @return Uniform id
 	 */
 	[[nodiscard]] GLint GetUniformLocation(const char *name) const;
+	[[nodiscard]] GLuint GetProgramResourceIndex(const char* dataName) const;
+	void StorageBlockBinding(unsigned int blockIndex, unsigned int bindingPointIndex) const;
 
 	/**
 	 * Sets a int <size> vector in the shader.
