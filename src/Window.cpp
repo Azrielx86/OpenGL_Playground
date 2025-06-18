@@ -31,6 +31,15 @@ bool Window::Init()
 
 	window = glfwCreateWindow(width, height, winName, nullptr, nullptr);
 
+	if (window == nullptr)
+	{
+		const char *errorLog = nullptr;
+		glfwGetError(&errorLog);
+		std::cerr << "Cannot create glfw window: " << errorLog << "\n";
+		glfwTerminate();
+		return false;
+	}
+
 	glfwMakeContextCurrent(window);
 	glfwSetWindowUserPointer(window, this);
 
