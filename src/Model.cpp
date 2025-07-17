@@ -94,13 +94,13 @@ void Model::Render(Shader &shader)
 {
 	for (Mesh &mesh : meshes)
 	{
-		// const auto material = mesh.GetMaterial();
-		// shader.Set<3>("material.ambient", material->ambient);
-		// shader.Set<3>("material.diffuse", material->diffuse);
-		// shader.Set<3>("material.emissive", material->emissive);
-		// shader.Set<3>("material.specular", material->specular);
-		// shader.Set("material.shininess", material->shininess);
-		// shader.Set("material.textured", material->textured);
+		const auto material = mesh.GetMaterial();
+		shader.Set<3>("material.ambient", material->ambient);
+		shader.Set<3>("material.diffuse", material->diffuse);
+		shader.Set<3>("material.emissive", material->emissive);
+		shader.Set<3>("material.specular", material->specular);
+		shader.Set("material.shininess", material->shininess);
+		shader.Set("material.textured", material->textured);
 		mesh.Render(shader);
 	}
 }

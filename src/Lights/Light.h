@@ -9,20 +9,15 @@
 namespace Lights
 {
 
-class Light
+struct Light
 {
-  public:
-	void SetPosition(const glm::vec3 &position);
-
-	void SetColor(const glm::vec3 &color);
-
-	[[nodiscard]] glm::vec3 GetPosition() const;
-
-	[[nodiscard]] glm::vec3 GetColor() const;
-
-  private:
 	glm::vec3 position{};
-	glm::vec3 color{};
+	glm::vec3 ambient{};
+	glm::vec3 diffuse{};
+	glm::vec3 specular{};
+	float constant;
+	float linear;
+	float quadratic;
 };
 
 } // namespace Lights

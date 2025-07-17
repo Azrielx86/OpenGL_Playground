@@ -8,9 +8,14 @@
 #include <format>
 #include <iostream>
 
+void GLFWwindowDeleter::operator()(GLFWwindow *window) const
+{
+	glfwDestroyWindow(window);
+}
+
 Window::Window(const int width, const int height, const char *name) : height(height), width(width), winName(name)
 {
-	this->window = nullptr;
+	this->window.reset();
 }
 
 bool Window::Init()
@@ -29,7 +34,7 @@ bool Window::Init()
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_SAMPLES, 4);
 
-	window = glfwCreateWindow(width, height, winName, nullptr, nullptr);
+	window.reset(glfwCreateWindow(width, height, winName, nullptr, nullptr));
 
 	if (window == nullptr)
 	{
@@ -40,8 +45,8 @@ bool Window::Init()
 		return false;
 	}
 
-	glfwMakeContextCurrent(window);
-	glfwSetWindowUserPointer(window, this);
+	glfwMakeContextCurrent(window.get());
+	glfwSetWindowUserPointer(window.get(), this);
 
 	glewExperimental = true;
 	if (const auto glewInitResult = glewInit(); glewInitResult != GLEW_OK && glewInitResult != GLEW_ERROR_NO_GLX_DISPLAY)
@@ -55,11 +60,11 @@ bool Window::Init()
 	glEnable(GL_MULTISAMPLE);
 
 	// callbacks
-	glfwSetFramebufferSizeCallback(window, CbkFrameBufferSize);
-	glfwSetCursorPosCallback(window, CbkMouseCallback);
-	glfwSetKeyCallback(window, CbkKeyboardInputCallback);
+	glfwSetFramebufferSizeCallback(window.get(), CbkFrameBufferSize);
+	glfwSetCursorPosCallback(window.get(), CbkMouseCallback);
+	glfwSetKeyCallback(window.get(), CbkKeyboardInputCallback);
 
-	glfwSetInputMode(window, GLFW_STICKY_KEYS, GLFW_FALSE);
+	glfwSetInputMode(window.get(), GLFW_STICKY_KEYS, GLFW_FALSE);
 	//	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	// imgui setting
@@ -72,7 +77,7 @@ bool Window::Init()
 
 	ImGui::StyleColorsDark();
 
-	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	ImGui_ImplGlfw_InitForOpenGL(window.get(), true);
 	ImGui_ImplOpenGL3_Init();
 
 	return true;
@@ -92,12 +97,12 @@ void Window::CbkFrameBufferSize([[maybe_unused]] GLFWwindow *window, int width, 
 
 bool Window::ShouldClose()
 {
-	return glfwWindowShouldClose(window);
+	return glfwWindowShouldClose(window.get());
 }
 
 void Window::SwapBuffers()
 {
-	glfwSwapBuffers(window);
+	glfwSwapBuffers(window.get());
 }
 
 Window::~Window()
@@ -105,7 +110,7 @@ Window::~Window()
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
-	glfwDestroyWindow(window);
+	window.reset();
 	glfwTerminate();
 }
 
@@ -128,16 +133,16 @@ void Window::CbkKeyboardInputCallback([[maybe_unused]] GLFWwindow *window, int k
 	Input::Keyboard::GetInstance()->HandleKeys(key, code, action, mode);
 }
 
-void Window::SetShouldClose(bool value) { glfwSetWindowShouldClose(window, value); }
+void Window::SetShouldClose(bool value) { glfwSetWindowShouldClose(window.get(), value); }
 
 float Window::GetAspect() const { return (float) width / (float) height; }
 
 void Window::SetMouseStatus(bool enable)
 {
 	if (enable)
-		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		glfwSetInputMode(window.get(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	else
-		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		glfwSetInputMode(window.get(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 }
 
 #pragma clang diagnostic push

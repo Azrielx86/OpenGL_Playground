@@ -18,6 +18,11 @@
 
 #include <vector>
 
+struct GLFWwindowDeleter
+{
+	void operator()(GLFWwindow *window) const;
+};
+
 class Window
 {
   public:
@@ -39,7 +44,7 @@ class Window
 	int height;
 	int width;
 	const char *winName;
-	GLFWwindow *window;
+	std::unique_ptr<GLFWwindow, GLFWwindowDeleter> window;
 	std::vector<Framebuffer*> buffers;
 	static void CbkFrameBufferSize([[maybe_unused]] GLFWwindow *window, int width, int height);
 	static void CbkMouseCallback([[maybe_unused]] [[maybe_unused]] GLFWwindow *window, double xpos, double ypos);

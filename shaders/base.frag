@@ -8,8 +8,6 @@ in vec3 Normal;
 in mat3 TBN;
 
 uniform vec3 ambientLightColor;
-uniform vec3 lightColor;
-uniform vec3 lightPos;
 
 uniform sampler2D texture_diffuse;
 uniform sampler2D texture_specular;
@@ -26,32 +24,59 @@ struct Material {
     bool textured;
 };
 
+struct PointLight {
+    vec4 position;
+
+    vec4 ambient;
+    vec4 diffuse;
+    vec4 specular;
+
+    float constant;
+    float linear;
+    float quadratic;
+};
+
+layout(std430, binding = 3) buffer pointLights
+{
+    PointLight pointLightsData[];
+};
+
 uniform Material material;
 
-void main()
+vec4 CalcPointLight(PointLight light, vec3 normal)
 {
-    //    Ambient
-    float ambientStrength = 0.0f;
-    vec3 ambient = ambientStrength * ambientLightColor;
+    float dist = length(light.position.xyz - FragPos);
+    float attenuation = 1.0f / (light.constant + (light.linear * dist) +
+    (light.quadratic * (dist * dist)));
 
-    vec3 normal = texture(texture_normal, uTexCoords).rgb;
-    normal = normal * 2.0f - 1.0f;
-    normal = normalize(TBN * normal);
+    //    Ambient
+    vec3 ambient = light.ambient.rgb * texture(texture_diffuse, uTexCoords).rgb * attenuation;
 
     //    Diffuse
-    vec3 lightDir = normalize(lightPos - FragPos);
+    vec3 lightDir = normalize(light.position.xyz - FragPos);
     float diff = max(dot(normal, lightDir), 0.0);
-    vec3 diffuse = lightColor * diff * texture(texture_diffuse, uTexCoords).xyz;
+    vec3 diffuse = light.diffuse.rgb * diff * texture(texture_diffuse, uTexCoords).xyz * attenuation;
 
     //    Specular
     vec3 viewDir = normalize(FragView);
     vec3 reflectDir = reflect(-viewDir, normal);
     float spec = pow(max(dot(viewDir, reflectDir), 1.0f), material.shininess);
-    vec3 specular = lightColor * spec * texture(texture_specular, uTexCoords).xyz;
-//    vec3 specular = lightColor * spec * vec3(0.0);
+    vec3 specular = light.specular.rgb * spec * texture(texture_specular, uTexCoords).xyz * attenuation;
 
-    //    Total color
-    vec4 totalColor = vec4((ambient + diffuse + specular), texture(texture_diffuse, uTexCoords).a);
+    return vec4((ambient + diffuse + specular), texture(texture_diffuse, uTexCoords).a);
+}
+
+void main()
+{
+    vec3 normal = texture(texture_normal, uTexCoords).rgb;
+    normal = normal * 2.0f - 1.0f;
+    normal = normalize(TBN * normal);
+
+    vec4 totalColor = vec4(0.0f);
+
+    for (int i = 0; i < 3; i++) {
+        totalColor += CalcPointLight(pointLightsData[i], normal);
+    }
 
     outColor = totalColor;
 }

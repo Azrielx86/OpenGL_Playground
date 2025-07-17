@@ -8,6 +8,7 @@
 #include "Entities/Particle.h"
 #include "Input/Keyboard.h"
 #include "Lights/Light.h"
+#include "Lights/PointLight.h"
 #include "Model.h"
 #include "Resources/ResourceManager.h"
 #include "Shader.h"
@@ -202,18 +203,51 @@ int main()
 	camera.SetMoveSpeed(1.5f);
 	camera.SetTurnSpeed(1.0f);
 
-	Lights::Light exampleLight;
-	exampleLight.SetPosition({2.0f, 2.0f, 2.0f});
-	exampleLight.SetColor({1.0f, 1.0f, 1.0f});
-
 	mouse.ToggleMouse(enableCursor);
 	window.SetMouseStatus(enableCursor);
 
-	constexpr unsigned int particlesCount = 1;
-	std::vector<Entities::Particle> particles(particlesCount);
+#define LIGHTS_TEST
+#ifdef LIGHTS_TEST
 
-	for (unsigned int i = 0; i < particlesCount; ++i)
-		particles.emplace_back();
+	shader.Use();
+
+	// Lights::PointLight pointLights[2];
+	std::array<Lights::PointLight, 3> pointLights;
+	pointLights[0] = {
+	    .position = {2.0f, 2.0f, 2.0f, 0.0f},
+	    .ambient = {0.1f, 0.1f, 0.1f, 0.0f},
+	    .diffuse = {1.0f, 0.0f, 0.0f, 0.0f},
+	    .specular = {1.0f, 1.0f, 1.0f, 0.0f},
+	    .constant = 1.0f,
+	    .linear = 0.09f,
+	    .quadratic = 0.032f};
+
+	pointLights[1] = {
+	    .position = {-2.0f, 2.0f, -2.0f, 0.0f},
+	    .ambient = {0.1f, 0.1f, 0.1f, 0.0f},
+	    .diffuse = {0.0f, 1.0f, 0.0f, 0.0f},
+	    .specular = {1.0f, 1.0f, 1.0f, 0.0f},
+	    .constant = 1.0f,
+	    .linear = 0.09f,
+	    .quadratic = 0.032f};
+
+	pointLights[2] = {
+		.position = {-2.0f, 2.0f, 2.0f, 0.0f},
+		.ambient = {0.1f, 0.1f, 0.1f, 0.0f},
+		.diffuse = {0.0f, 0.0f, 1.0f, 0.0f},
+		.specular = {1.0f, 1.0f, 1.0f, 0.0f},
+		.constant = 1.0f,
+		.linear = 0.09f,
+		.quadratic = 0.032f};
+
+	GLuint ssbo = -1;
+	glGenBuffers(1, &ssbo);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(Lights::PointLight) * pointLights.size(), pointLights.data(), GL_DYNAMIC_DRAW);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, ssbo);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+#endif
 
 	ConfigureKeys(window);
 	CreateSimpleMeshes();
@@ -271,8 +305,6 @@ int main()
 		shader.Set<4, 4>("view", view);
 		shader.Set<4, 4>("projection", projection);
 		shader.Set<3>("ambientLightColor", glm::vec3{1.0f, 1.0f, 1.0f});
-		shader.Set<3>("lightColor", exampleLight.GetColor());
-		shader.Set<3>("lightPos", exampleLight.GetPosition());
 
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, {0.0f, 0.0f, 0.0f});
@@ -330,6 +362,20 @@ int main()
 		{
 			gridShader.ReloadShader();
 			std::cout << "Grid shader reloaded!\n";
+		}
+		ImGui::End();
+
+		ImGui::Begin("Lights control");
+		for (size_t i = 0; i < pointLights.size(); ++i)
+		{
+			Lights::PointLight &pLight = pointLights[i];
+			ImGui::SeparatorText(std::format("PointLight {}", i).c_str());
+			ImGui::SliderFloat(std::format("Constant PL {}", i).c_str(), &pLight.constant, 0.0, 1.0);
+			ImGui::SliderFloat(std::format("Linear PL {}", i).c_str(), &pLight.linear, 0.0, 1.0);
+			ImGui::SliderFloat(std::format("Quadratic PL {}", i).c_str(), &pLight.quadratic, 0.0, 1.0);
+			ImGui::ColorEdit4(std::format("Color PL {}", i).c_str(), reinterpret_cast<float *>(&pLight.diffuse), ImGuiColorEditFlags_Float);
+			glBufferSubData(GL_SHADER_STORAGE_BUFFER, static_cast<GLintptr>(sizeof(Lights::PointLight) * i), sizeof(Lights::PointLight), &pLight);
+			glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, ssbo);
 		}
 		ImGui::End();
 		// endregion

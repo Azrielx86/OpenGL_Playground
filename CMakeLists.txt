@@ -4,7 +4,8 @@ project(ShaderPlayground)
 include(FetchContent)
 
 set(CMAKE_CXX_STANDARD 20)
-#set(CMAKE_CONFIGURATION_TYPES "Debug;Release;NoSanitize" CACHE STRING "" FORCE)
+
+set(CMAKE_CXX_FLAGS "-Wno-nontrivial-memcall")
 
 if (VCPKG_TOOLCHAIN)
     message(STATUS "Using vcpkg Package Manager")
@@ -101,10 +102,12 @@ add_executable(ShaderPlayground src/main.cpp
         src/Skybox.h
         src/Resources/Texture.cpp
         src/Resources/Texture.h
-        src/Lights/Light.cpp
         src/Lights/Light.h
         src/Framebuffer.cpp
         src/Framebuffer.h
+        src/Lights/LightCollection.cpp
+        src/Lights/LightCollection.h
+        src/Lights/PointLight.h
 )
 
 message(STATUS "Copying shader files.")
