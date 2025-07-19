@@ -38,6 +38,8 @@ struct PointLight {
     bool isTurnedOn;
 };
 
+uniform int pointLightsSize;
+
 layout (std430, binding = 3) buffer pointLights
 {
     PointLight pointLightsData[];
@@ -76,7 +78,7 @@ void main()
 
     vec4 totalColor = vec4(0.0f);
 
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < pointLightsSize; i++) {
         if (!pointLightsData[i].isTurnedOn) continue;
         totalColor += CalcPointLight(pointLightsData[i], normal);
     }

@@ -205,48 +205,6 @@ int main()
 	mouse.ToggleMouse(enableCursor);
 	window.SetMouseStatus(enableCursor);
 
-// #define LIGHTS_TEST
-#ifdef LIGHTS_TEST
-
-	shader.Use();
-
-	std::vector<Lights::PointLight> pointLights;
-
-	pointLights.reserve(3);
-
-	pointLights.push_back({.position = {2.0f, 2.0f, 2.0f, 0.0f},
-	                       .ambient = {0.1f, 0.1f, 0.1f, 0.0f},
-	                       .diffuse = {1.0f, 0.0f, 0.0f, 0.0f},
-	                       .specular = {1.0f, 1.0f, 1.0f, 0.0f},
-	                       .constant = 1.0f,
-	                       .linear = 0.09f,
-	                       .quadratic = 0.032f,
-	                       .isTurnedOn = true});
-
-	pointLights.push_back({.position = {-2.0f, 2.0f, -2.0f, 0.0f},
-	                       .ambient = {0.1f, 0.1f, 0.1f, 0.0f},
-	                       .diffuse = {0.0f, 1.0f, 0.0f, 0.0f},
-	                       .specular = {1.0f, 1.0f, 1.0f, 0.0f},
-	                       .constant = 1.0f,
-	                       .linear = 0.09f,
-	                       .quadratic = 0.032f,
-	                       .isTurnedOn = true});
-
-	pointLights.push_back({.position = {-2.0f, 2.0f, 2.0f, 0.0f},
-	                       .ambient = {0.1f, 0.1f, 0.1f, 0.0f},
-	                       .diffuse = {0.0f, 0.0f, 1.0f, 0.0f},
-	                       .specular = {1.0f, 1.0f, 1.0f, 0.0f},
-	                       .constant = 1.0f,
-	                       .linear = 0.09f,
-	                       .quadratic = 0.032f,
-	                       .isTurnedOn = true});
-
-	GLuint ssbo = -1;
-	glCreateBuffers(1, &ssbo);
-	glNamedBufferData(ssbo, sizeof(Lights::PointLight) * pointLights.size(), pointLights.data(), GL_DYNAMIC_DRAW);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, ssbo);
-
-#else
 	StorageBufferDynamicArray<Lights::PointLight> pointLights(3);
 	pointLights.Add({.position = {2.0f, 2.0f, 2.0f, 0.0f},
 	                 .ambient = {0.1f, 0.1f, 0.1f, 0.0f},
@@ -274,7 +232,6 @@ int main()
 	                 .linear = 0.09f,
 	                 .quadratic = 0.032f,
 	                 .isTurnedOn = true});
-#endif
 
 	ConfigureKeys(window);
 	CreateSimpleMeshes();
@@ -358,6 +315,8 @@ int main()
 			shader.Use();
 		}
 
+		shader.Set("pointLightsSize", static_cast<int>(pointLights.Size()));
+
 		glDisable(GL_BLEND);
 
 		// region gui
@@ -393,16 +352,42 @@ int main()
 		ImGui::End();
 
 		ImGui::Begin("Lights control");
+
+		if (ImGui::Button("Add light"))
+		{
+			pointLights.Add({.position = {0.0f, 0.0f, 2.0f, 0.0f},
+			                 .ambient = {0.1f, 0.1f, 0.1f, 0.0f},
+			                 .diffuse = {1.0f, 1.0f, 1.0f, 0.0f},
+			                 .specular = {1.0f, 1.0f, 1.0f, 0.0f},
+			                 .constant = 1.0f,
+			                 .linear = 0.09f,
+			                 .quadratic = 0.032f,
+			                 .isTurnedOn = true});
+		}
+
 		for (size_t i = 0; i < pointLights.Size(); ++i)
 		{
 			Lights::PointLight &pLight = pointLights[i];
-			ImGui::SeparatorText(std::format("PointLight {}", i).c_str());
-			ImGui::SliderFloat(std::format("Constant PL {}", i).c_str(), &pLight.constant, 0.0, 1.0);
-			ImGui::SliderFloat(std::format("Linear PL {}", i).c_str(), &pLight.linear, 0.0, 1.0);
-			ImGui::SliderFloat(std::format("Quadratic PL {}", i).c_str(), &pLight.quadratic, 0.0, 1.0);
-			ImGui::Checkbox(std::format("Is turned on PL {}", i).c_str(), reinterpret_cast<bool *>(&pLight.isTurnedOn));
-			ImGui::ColorEdit4(std::format("Color PL {}", i).c_str(), reinterpret_cast<float *>(&pLight.diffuse), ImGuiColorEditFlags_Float);
+			ImGui::PushID(std::format("PL{}", i).c_str());
+			ImGui::Columns(3, "Position");
+			ImGui::DragFloat("X", &pLight.position.x);
+			ImGui::NextColumn();
+			ImGui::DragFloat("Y", &pLight.position.y);
+			ImGui::NextColumn();
+			ImGui::DragFloat("Z", &pLight.position.z);
+			ImGui::Columns(1);
+			ImGui::SeparatorText(std::format("Pointlight {}", i).c_str());
+			ImGui::SliderFloat("Constant", &pLight.constant, 0.0, 1.0);
+			ImGui::SliderFloat("Linear", &pLight.linear, 0.0, 1.0);
+			ImGui::SliderFloat("Quadratic", &pLight.quadratic, 0.0, 1.0);
+			ImGui::Checkbox("Is turned on", reinterpret_cast<bool *>(&pLight.isTurnedOn));
+			ImGui::ColorEdit4("Color", reinterpret_cast<float *>(&pLight.diffuse), ImGuiColorEditFlags_Float);
 			pointLights.UpdateIndex(i);
+
+			if (ImGui::Button(std::format("Delete", i).c_str()))
+				pointLights.Remove(i);
+
+			ImGui::PopID();
 		}
 		ImGui::End();
 		// endregion

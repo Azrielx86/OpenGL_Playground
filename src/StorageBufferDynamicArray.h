@@ -11,6 +11,7 @@
 template <typename T>
 class StorageBufferDynamicArray
 {
+	static_assert(std::is_class_v<T>);
 	GLuint ssbo{};
 	unsigned int bindingIndex;
 	std::vector<T> data;
@@ -20,6 +21,7 @@ class StorageBufferDynamicArray
 	void Add(const T &item);
 	T &operator[](size_t index);
 	void UpdateIndex(size_t index);
+	void Remove(size_t index);
 	size_t Size();
 };
 
@@ -49,6 +51,14 @@ template <typename T>
 void StorageBufferDynamicArray<T>::UpdateIndex(const size_t index)
 {
 	glNamedBufferSubData(ssbo, static_cast<GLintptr>(sizeof(T) * index), sizeof(T), &data[index]);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, bindingIndex, ssbo);
+}
+
+template <typename T>
+void StorageBufferDynamicArray<T>::Remove(size_t index)
+{
+	data.erase(data.begin() + index);
+	glNamedBufferData(ssbo, sizeof(T) * data.size(), data.data(), GL_DYNAMIC_DRAW);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, bindingIndex, ssbo);
 }
 
