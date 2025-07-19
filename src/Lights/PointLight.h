@@ -8,7 +8,7 @@
 namespace Lights
 {
 
-struct alignas(16) PointLight
+struct PointLight
 {
 	glm::vec4 position{};
 	glm::vec4 ambient{};
@@ -17,6 +17,7 @@ struct alignas(16) PointLight
 	GLfloat constant;
 	GLfloat linear;
 	GLfloat quadratic;
+	GLboolean isTurnedOn;
 };
 
 } // namespace Lights

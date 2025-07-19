@@ -102,12 +102,11 @@ add_executable(ShaderPlayground src/main.cpp
         src/Skybox.h
         src/Resources/Texture.cpp
         src/Resources/Texture.h
-        src/Lights/Light.h
         src/Framebuffer.cpp
         src/Framebuffer.h
-        src/Lights/LightCollection.cpp
-        src/Lights/LightCollection.h
         src/Lights/PointLight.h
+        src/StorageBufferDynamicArray.cpp
+        src/StorageBufferDynamicArray.h
 )
 
 message(STATUS "Copying shader files.")

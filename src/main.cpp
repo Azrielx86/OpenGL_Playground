@@ -7,16 +7,15 @@
 #include "Camera.h"
 #include "Entities/Particle.h"
 #include "Input/Keyboard.h"
-#include "Lights/Light.h"
 #include "Lights/PointLight.h"
 #include "Model.h"
 #include "Resources/ResourceManager.h"
 #include "Shader.h"
 #include "Skybox.h"
+#include "StorageBufferDynamicArray.h"
 #include "Window.h"
 
 #include <iostream>
-#include <vector>
 
 #define RGBCOLOR(r, g, b) glm::vec3(r / 255.0f, g / 255.0f, b / 255.0f)
 
@@ -206,47 +205,75 @@ int main()
 	mouse.ToggleMouse(enableCursor);
 	window.SetMouseStatus(enableCursor);
 
-#define LIGHTS_TEST
+// #define LIGHTS_TEST
 #ifdef LIGHTS_TEST
 
 	shader.Use();
 
-	// Lights::PointLight pointLights[2];
-	std::array<Lights::PointLight, 3> pointLights;
-	pointLights[0] = {
-	    .position = {2.0f, 2.0f, 2.0f, 0.0f},
-	    .ambient = {0.1f, 0.1f, 0.1f, 0.0f},
-	    .diffuse = {1.0f, 0.0f, 0.0f, 0.0f},
-	    .specular = {1.0f, 1.0f, 1.0f, 0.0f},
-	    .constant = 1.0f,
-	    .linear = 0.09f,
-	    .quadratic = 0.032f};
+	std::vector<Lights::PointLight> pointLights;
 
-	pointLights[1] = {
-	    .position = {-2.0f, 2.0f, -2.0f, 0.0f},
-	    .ambient = {0.1f, 0.1f, 0.1f, 0.0f},
-	    .diffuse = {0.0f, 1.0f, 0.0f, 0.0f},
-	    .specular = {1.0f, 1.0f, 1.0f, 0.0f},
-	    .constant = 1.0f,
-	    .linear = 0.09f,
-	    .quadratic = 0.032f};
+	pointLights.reserve(3);
 
-	pointLights[2] = {
-		.position = {-2.0f, 2.0f, 2.0f, 0.0f},
-		.ambient = {0.1f, 0.1f, 0.1f, 0.0f},
-		.diffuse = {0.0f, 0.0f, 1.0f, 0.0f},
-		.specular = {1.0f, 1.0f, 1.0f, 0.0f},
-		.constant = 1.0f,
-		.linear = 0.09f,
-		.quadratic = 0.032f};
+	pointLights.push_back({.position = {2.0f, 2.0f, 2.0f, 0.0f},
+	                       .ambient = {0.1f, 0.1f, 0.1f, 0.0f},
+	                       .diffuse = {1.0f, 0.0f, 0.0f, 0.0f},
+	                       .specular = {1.0f, 1.0f, 1.0f, 0.0f},
+	                       .constant = 1.0f,
+	                       .linear = 0.09f,
+	                       .quadratic = 0.032f,
+	                       .isTurnedOn = true});
+
+	pointLights.push_back({.position = {-2.0f, 2.0f, -2.0f, 0.0f},
+	                       .ambient = {0.1f, 0.1f, 0.1f, 0.0f},
+	                       .diffuse = {0.0f, 1.0f, 0.0f, 0.0f},
+	                       .specular = {1.0f, 1.0f, 1.0f, 0.0f},
+	                       .constant = 1.0f,
+	                       .linear = 0.09f,
+	                       .quadratic = 0.032f,
+	                       .isTurnedOn = true});
+
+	pointLights.push_back({.position = {-2.0f, 2.0f, 2.0f, 0.0f},
+	                       .ambient = {0.1f, 0.1f, 0.1f, 0.0f},
+	                       .diffuse = {0.0f, 0.0f, 1.0f, 0.0f},
+	                       .specular = {1.0f, 1.0f, 1.0f, 0.0f},
+	                       .constant = 1.0f,
+	                       .linear = 0.09f,
+	                       .quadratic = 0.032f,
+	                       .isTurnedOn = true});
 
 	GLuint ssbo = -1;
-	glGenBuffers(1, &ssbo);
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
-	glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(Lights::PointLight) * pointLights.size(), pointLights.data(), GL_DYNAMIC_DRAW);
+	glCreateBuffers(1, &ssbo);
+	glNamedBufferData(ssbo, sizeof(Lights::PointLight) * pointLights.size(), pointLights.data(), GL_DYNAMIC_DRAW);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, ssbo);
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
+#else
+	StorageBufferDynamicArray<Lights::PointLight> pointLights(3);
+	pointLights.Add({.position = {2.0f, 2.0f, 2.0f, 0.0f},
+	                 .ambient = {0.1f, 0.1f, 0.1f, 0.0f},
+	                 .diffuse = {1.0f, 0.0f, 0.0f, 0.0f},
+	                 .specular = {1.0f, 1.0f, 1.0f, 0.0f},
+	                 .constant = 1.0f,
+	                 .linear = 0.09f,
+	                 .quadratic = 0.032f,
+	                 .isTurnedOn = true});
+
+	pointLights.Add({.position = {-2.0f, 2.0f, -2.0f, 0.0f},
+	                 .ambient = {0.1f, 0.1f, 0.1f, 0.0f},
+	                 .diffuse = {0.0f, 1.0f, 0.0f, 0.0f},
+	                 .specular = {1.0f, 1.0f, 1.0f, 0.0f},
+	                 .constant = 1.0f,
+	                 .linear = 0.09f,
+	                 .quadratic = 0.032f,
+	                 .isTurnedOn = true});
+
+	pointLights.Add({.position = {-2.0f, 2.0f, 2.0f, 0.0f},
+	                 .ambient = {0.1f, 0.1f, 0.1f, 0.0f},
+	                 .diffuse = {0.0f, 0.0f, 1.0f, 0.0f},
+	                 .specular = {1.0f, 1.0f, 1.0f, 0.0f},
+	                 .constant = 1.0f,
+	                 .linear = 0.09f,
+	                 .quadratic = 0.032f,
+	                 .isTurnedOn = true});
 #endif
 
 	ConfigureKeys(window);
@@ -366,16 +393,16 @@ int main()
 		ImGui::End();
 
 		ImGui::Begin("Lights control");
-		for (size_t i = 0; i < pointLights.size(); ++i)
+		for (size_t i = 0; i < pointLights.Size(); ++i)
 		{
 			Lights::PointLight &pLight = pointLights[i];
 			ImGui::SeparatorText(std::format("PointLight {}", i).c_str());
 			ImGui::SliderFloat(std::format("Constant PL {}", i).c_str(), &pLight.constant, 0.0, 1.0);
 			ImGui::SliderFloat(std::format("Linear PL {}", i).c_str(), &pLight.linear, 0.0, 1.0);
 			ImGui::SliderFloat(std::format("Quadratic PL {}", i).c_str(), &pLight.quadratic, 0.0, 1.0);
+			ImGui::Checkbox(std::format("Is turned on PL {}", i).c_str(), reinterpret_cast<bool *>(&pLight.isTurnedOn));
 			ImGui::ColorEdit4(std::format("Color PL {}", i).c_str(), reinterpret_cast<float *>(&pLight.diffuse), ImGuiColorEditFlags_Float);
-			glBufferSubData(GL_SHADER_STORAGE_BUFFER, static_cast<GLintptr>(sizeof(Lights::PointLight) * i), sizeof(Lights::PointLight), &pLight);
-			glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, ssbo);
+			pointLights.UpdateIndex(i);
 		}
 		ImGui::End();
 		// endregion

@@ -34,9 +34,11 @@ struct PointLight {
     float constant;
     float linear;
     float quadratic;
+
+    bool isTurnedOn;
 };
 
-layout(std430, binding = 3) buffer pointLights
+layout (std430, binding = 3) buffer pointLights
 {
     PointLight pointLightsData[];
 };
@@ -75,6 +77,7 @@ void main()
     vec4 totalColor = vec4(0.0f);
 
     for (int i = 0; i < 3; i++) {
+        if (!pointLightsData[i].isTurnedOn) continue;
         totalColor += CalcPointLight(pointLightsData[i], normal);
     }
 
