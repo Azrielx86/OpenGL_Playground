@@ -154,21 +154,12 @@ int main()
 	// clang-format on
 	skybox.Load();
 
-	Shader shader{};
-	Shader particleShader{};
-	Shader skyboxShader{};
-	Shader blurShader{};
-	Shader sharpShader{};
-	Shader grayscaleShader{};
-	Shader gridShader{};
-
-	shader = *resources.GetShader("base");
-	particleShader = *resources.GetShader("particle_shader");
-	skyboxShader = *resources.GetShader("skybox_shader");
-	blurShader = *resources.GetShader("blur");
-	sharpShader = *resources.GetShader("sharp");
-	grayscaleShader = *resources.GetShader("grayscale");
-	gridShader = *resources.GetShader("infinite_grid");
+	Shader shader = *resources.GetShader("base");
+	Shader skyboxShader = *resources.GetShader("skybox_shader");
+	Shader blurShader = *resources.GetShader("blur");
+	Shader sharpShader = *resources.GetShader("sharp");
+	Shader grayscaleShader = *resources.GetShader("grayscale");
+	Shader gridShader = *resources.GetShader("infinite_grid");
 
 	Framebuffer blurFramebuffer(blurShader, window.GetWidth(), window.GetHeight());
 	Framebuffer sharpFramebuffer(sharpShader, window.GetWidth(), window.GetHeight());
@@ -199,8 +190,14 @@ int main()
 
 	Camera camera({2.0f, 2.0f, 2.0f}, {0.0f, 1.0f, 0.0f});
 	camera.SetInput(Input::Keyboard::GetInstance(), Input::Mouse::GetInstance());
-	camera.SetMoveSpeed(1.5f);
-	camera.SetTurnSpeed(1.0f);
+	// camera.SetMoveSpeed(1.5f);
+	// camera.SetTurnSpeed(1.0f);
+
+	float cameraMoveSpeed = 150.0f;
+	float cameraTurnSpeed = 75.0f;
+
+	camera.SetMoveSpeed(cameraMoveSpeed);
+	camera.SetTurnSpeed(cameraTurnSpeed);
 
 	mouse.ToggleMouse(enableCursor);
 	window.SetMouseStatus(enableCursor);
@@ -349,6 +346,13 @@ int main()
 			gridShader.ReloadShader();
 			std::cout << "Grid shader reloaded!\n";
 		}
+
+		if (ImGui::DragFloat("Camera move speed", &cameraMoveSpeed))
+			camera.SetMoveSpeed(cameraMoveSpeed);
+
+		if (ImGui::DragFloat("Camera turn speed", &cameraTurnSpeed))
+			camera.SetTurnSpeed(cameraTurnSpeed);
+
 		ImGui::End();
 
 		ImGui::Begin("Lights control");
@@ -405,8 +409,7 @@ int main()
 		// endregion
 
 		window.EndGui();
-		window.SwapBuffers();
-		glfwPollEvents();
+		window.EndRenderPass();
 	}
 
 	return 0;
