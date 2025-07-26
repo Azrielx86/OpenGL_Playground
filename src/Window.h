@@ -30,7 +30,7 @@ class Window
 	bool Init();
 	bool ShouldClose();
 	void SetShouldClose(bool value);
-	void SwapBuffers();
+	void EndRenderPass();
 	[[nodiscard]] float GetAspect() const;
 	void SetMouseStatus(bool enable);
 	void StartGui();

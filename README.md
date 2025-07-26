@@ -13,7 +13,7 @@ Work in progress!
 
 ## Things that I want to do
 
-- [ ] Multiple lights
+- [x] Multiple lights
 - [ ] Lighing: Point and Spot
 - [x] Normal mapping
 - [ ] Parallax mapping

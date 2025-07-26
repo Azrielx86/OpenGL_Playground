@@ -100,9 +100,10 @@ bool Window::ShouldClose()
 	return glfwWindowShouldClose(window.get());
 }
 
-void Window::SwapBuffers()
+void Window::EndRenderPass()
 {
 	glfwSwapBuffers(window.get());
+	glfwPollEvents();
 }
 
 Window::~Window()
