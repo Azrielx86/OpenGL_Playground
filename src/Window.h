@@ -38,17 +38,26 @@ class Window
 	~Window();
 	[[nodiscard]] int GetHeight() const;
 	[[nodiscard]] int GetWidth() const;
-	void AddFramebuffer(Framebuffer* fb);
+	void AddFramebuffer(Framebuffer *fb);
 
   private:
 	int height;
 	int width;
 	const char *winName;
 	std::unique_ptr<GLFWwindow, GLFWwindowDeleter> window;
-	std::vector<Framebuffer*> buffers;
+	std::vector<Framebuffer *> buffers;
 	static void CbkFrameBufferSize([[maybe_unused]] GLFWwindow *window, int width, int height);
 	static void CbkMouseCallback([[maybe_unused]] [[maybe_unused]] GLFWwindow *window, double xpos, double ypos);
 	static void CbkKeyboardInputCallback([[maybe_unused]] GLFWwindow *window, int key, [[maybe_unused]] int code, int action, [[maybe_unused]] int mode);
+#ifdef DEBUG
+	static void GLAPIENTRY GlDebugOutput(GLenum source,
+	                                     GLenum type,
+	                                     unsigned int id,
+	                                     GLenum severity,
+	                                     GLsizei length,
+	                                     const char *message,
+	                                     const void *userParam);
+#endif
 };
 
 #endif // SHADERPLAYGROUND_WINDOW_H
