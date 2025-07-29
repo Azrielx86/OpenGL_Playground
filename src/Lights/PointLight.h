@@ -17,7 +17,7 @@ struct PointLight
 	GLfloat constant;
 	GLfloat linear;
 	GLfloat quadratic;
-	GLboolean isTurnedOn;
+	GLint isTurnedOn;
 };
 
 } // namespace Lights
