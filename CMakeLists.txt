@@ -7,6 +7,11 @@ set(CMAKE_CXX_STANDARD 20)
 
 set(CMAKE_CXX_FLAGS "-Wno-nontrivial-memcall")
 
+if (NOT UNIX)
+    message(STATUS "Compiling Windows version")
+    add_compile_definitions(-DWIN32)
+endif ()
+
 if (VCPKG_TOOLCHAIN)
     message(STATUS "Using vcpkg Package Manager")
 
@@ -22,8 +27,6 @@ if (VCPKG_TOOLCHAIN)
     find_package(imgui CONFIG REQUIRED)
 
     include_directories(${Stb_INCLUDE_DIR})
-
-    add_compile_definitions(-DWIN32)
 else ()
     find_package(OpenGL REQUIRED)
     find_package(GLEW REQUIRED)
