@@ -39,6 +39,7 @@ class Window
 	[[nodiscard]] int GetHeight() const;
 	[[nodiscard]] int GetWidth() const;
 	void AddFramebuffer(Framebuffer *fb);
+	void ToggleFullscreen();
 
   private:
 	int height;
@@ -46,6 +47,9 @@ class Window
 	const char *winName;
 	std::unique_ptr<GLFWwindow, GLFWwindowDeleter> window;
 	std::vector<Framebuffer *> buffers;
+	GLFWmonitor *monitor;
+	std::array<int, 2> windowSize;
+	std::array<int, 2> windowPos;
 	static void CbkFrameBufferSize([[maybe_unused]] GLFWwindow *window, int width, int height);
 	static void CbkMouseCallback([[maybe_unused]] [[maybe_unused]] GLFWwindow *window, double xpos, double ypos);
 	static void CbkKeyboardInputCallback([[maybe_unused]] GLFWwindow *window, int key, [[maybe_unused]] int code, int action, [[maybe_unused]] int mode);

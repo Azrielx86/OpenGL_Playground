@@ -22,6 +22,7 @@
 float deltaTime, lastTime;
 float red = 0.0f;
 bool enableCursorEvent = true;
+bool fullscreenEvent;
 bool enableCursor = true;
 bool enableGrid = true;
 
@@ -99,16 +100,6 @@ void CreateSimpleMeshes()
 void ConfigureKeys(Window &window)
 {
 	keyboard
-	    .AddCallback(GLFW_KEY_I, []() -> void
-	                 {
-		                 red += 0.01f;
-		                 if (red > 1) red = 1.0f;
-	                 })
-	    .AddCallback(GLFW_KEY_K, []() -> void
-	                 {
-		                 red -= 0.01f;
-		                 if (red < 0) red = 0.0f;
-	                 })
 	    .AddCallback(GLFW_KEY_ESCAPE, [&window]() -> void
 	                 {
 		                 window.SetShouldClose(true);
@@ -120,6 +111,12 @@ void ConfigureKeys(Window &window)
 		                 enableCursor = !enableCursor;
 		                 mouse.ToggleMouse(enableCursor);
 		                 window.SetMouseStatus(enableCursor);
+	                 })
+	    .AddCallback(GLFW_KEY_F11, [&window]() -> void
+	                 {
+		                 if (fullscreenEvent) return;
+		                 fullscreenEvent = true;
+		                 window.ToggleFullscreen();
 	                 });
 }
 
@@ -406,6 +403,7 @@ int main()
 
 		// region Special keys handle
 		if (!keyboard.GetKeyPress(GLFW_KEY_T)) enableCursorEvent = false;
+		if (!keyboard.GetKeyPress(GLFW_KEY_F11)) fullscreenEvent = false;
 		// endregion
 
 		window.EndGui();

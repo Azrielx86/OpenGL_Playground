@@ -62,6 +62,8 @@ bool Window::Init()
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_MULTISAMPLE);
 
+	monitor = glfwGetPrimaryMonitor();
+
 	// callbacks
 	glfwSetFramebufferSizeCallback(window.get(), CbkFrameBufferSize);
 	glfwSetCursorPosCallback(window.get(), CbkMouseCallback);
@@ -138,6 +140,22 @@ int Window::GetWidth() const { return width; }
 void Window::AddFramebuffer(Framebuffer *fb)
 {
 	buffers.push_back(fb);
+}
+
+void Window::ToggleFullscreen()
+{
+	if (glfwGetWindowMonitor(window.get()) == nullptr)
+	{
+		glfwGetWindowPos(window.get(), &windowPos[0], &windowPos[1]);
+		glfwGetWindowSize(window.get(), &windowSize[0], &windowSize[1]);
+
+		const auto mode = glfwGetVideoMode(monitor);
+		glfwSetWindowMonitor(window.get(), monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+	}
+	else
+	{
+		glfwSetWindowMonitor(window.get(), nullptr, windowPos[0], windowPos[1], windowSize[0], windowSize[1], 0);
+	}
 }
 
 void Window::CbkMouseCallback([[maybe_unused]] GLFWwindow *window, double xpos, double ypos)
