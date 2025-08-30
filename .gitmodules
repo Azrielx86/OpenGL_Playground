@@ -1,0 +1,3 @@
+[submodule "AzxEngineGL"]
+	path = AzxEngineGL
+	url = https://github.com/Azrielx86/AzxEngineGL
