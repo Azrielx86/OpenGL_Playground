@@ -6,7 +6,6 @@
 // endregion Global Include
 
 #include "Camera.h"
-#include "Entities/Particle.h"
 #include "Input/Keyboard.h"
 #include "Lights/PointLight.h"
 #include "Model.h"
@@ -15,7 +14,6 @@
 #include "Skybox.h"
 #include "StorageBufferDynamicArray.h"
 #include "Window.h"
-#include "World/Entity.h"
 #include "imgui.h"
 
 #include <csignal>
@@ -133,9 +131,6 @@ int main() {
     Model turret("./assets/models/turret/source/turret_model.fbx");
     // Model pod("./assets/models/pod/source/pod.fbx");
     Model twob("./assets/models/2b/2b.fbx");
-
-    World::Entity turret_ent = World::Entity::CreateEntity();
-    World::Entity twob_ent = World::Entity::CreateEntity();
 
 	// clang-format off
 	Skybox skybox({
