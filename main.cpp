@@ -34,6 +34,7 @@ bool enableCursorEvent = true;
 bool fullscreenEvent;
 bool enableCursor = true;
 bool enableGrid = true;
+bool enableSkybox = false;
 bool gridMode = false;
 
 float fpsCounter = 0;
@@ -160,12 +161,12 @@ int main()
 
     // clang-format off
 	Skybox skybox({
-	    "./assets/textures/skybox/px.png",
-	    "./assets/textures/skybox/nx.png",
-	    "./assets/textures/skybox/py.png",
-	    "./assets/textures/skybox/ny.png",
-	    "./assets/textures/skybox/pz.png",
-	    "./assets/textures/skybox/nz.png"
+	    "./assets/textures/skybox/sky_cubemap/px.png",
+	    "./assets/textures/skybox/sky_cubemap/nx.png",
+	    "./assets/textures/skybox/sky_cubemap/py.png",
+	    "./assets/textures/skybox/sky_cubemap/ny.png",
+	    "./assets/textures/skybox/sky_cubemap/pz.png",
+	    "./assets/textures/skybox/sky_cubemap/nz.png"
 	});
     // clang-format on
     skybox.Load();
@@ -308,11 +309,14 @@ int main()
         view = camera.GetLookAt();
         projection = glm::perspective(glm::radians(45.0f), window.GetAspect(), 0.1f, 100.0f);
 
-        // skybox
-        //     .BeginRender(skyboxShader)
-        //     .SetProjection(projection)
-        //     .SetView(view)
-        //     .Render();
+        if (enableSkybox)
+        {
+            skybox
+                .BeginRender(skyboxShader)
+                .SetProjection(projection)
+                .SetView(view)
+                .Render();
+        }
 
         shader.Use();
         uniforms.model = shader.GetUniformLocation("model");
@@ -367,6 +371,7 @@ int main()
         ImGui::Text("FPS = %f", static_cast<double>(fps));
         ImGui::Checkbox("Enable Grid", &enableGrid);
         ImGui::Checkbox("Enable effects", &enableEffects);
+        ImGui::Checkbox("Enable skybox", &enableSkybox);
         if (ImGui::Combo("Shader", &fbSelectedItem, fbItems, IM_ARRAYSIZE(fbItems)))
         {
             selectedEffect = framebuffers[fbSelectedItem];
