@@ -5,33 +5,23 @@ include(FetchContent)
 
 set(CMAKE_CXX_STANDARD 20)
 
-set(CMAKE_CXX_FLAGS "-Wno-nontrivial-memcall")
+if (FIX_ASSIMP_MEMCALL)
+    set(CMAKE_CXX_FLAGS "-Wno-nontrivial-memcall")
+endif ()
 
 if (NOT UNIX)
     message(STATUS "Compiling Windows version")
     add_compile_definitions(-DWIN32)
 endif ()
 
-if (VCPKG_TOOLCHAIN)
-    message(STATUS "Using vcpkg Package Manager")
-    find_package(imgui CONFIG REQUIRED)
-else ()
-    add_library(imgui
-            ${imgui_external_SOURCE_DIR}/imgui.cpp
-            ${imgui_external_SOURCE_DIR}/imgui_draw.cpp
-            ${imgui_external_SOURCE_DIR}/imgui_tables.cpp
-            ${imgui_external_SOURCE_DIR}/imgui_widgets.cpp
-            ${imgui_external_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
-            ${imgui_external_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
-    )
-
-    target_include_directories(imgui PUBLIC ${imgui_external_SOURCE_DIR})
-    include_directories(${imgui_external_SOURCE_DIR})
-    include_directories(${imgui_external_SOURCE_DIR}/backends)
-    include_directories("/usr/include/stb")
-endif ()
-
 add_subdirectory(AzxEngineGL)
+
+#if (VCPKG_TOOLCHAIN)
+#    message(STATUS "Using vcpkg Package Manager")
+#    find_package(imgui CONFIG REQUIRED)
+#else ()
+#    find_package(imgui_external REQUIRED)
+#endif ()
 
 add_compile_options(-Wall -Wextra -Wconversion -Wdouble-promotion -Wno-sign-conversion -Wno-unknown-pragmas -Wuninitialized)
 add_link_options(-Wall -Wextra -Wconversion -Wdouble-promotion -Wno-sign-conversion -Wno-unknown-pragmas -Wuninitialized)
