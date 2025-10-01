@@ -1,14 +1,12 @@
 #version 430
 
-uniform mat4 view;
-uniform mat4 projection;
-uniform mat4 model;
-
 layout (location = 0) in vec3 position;
 layout (location = 1) in vec3 normal;
 layout (location = 2) in vec2 uv;
-layout (location = 2) in vec3 tangent;
-layout (location = 2) in vec3 bitangent;
+layout (location = 3) in vec3 tangent;
+layout (location = 4) in vec3 bitangent;
+layout (location = 5) in ivec4 boneIds;
+layout (location = 6) in vec4 weights;
 
 out vec2 uTexCoords;
 out vec3 Normal;
@@ -16,10 +14,31 @@ out vec3 FragPos;
 out vec3 FragView;
 out mat3 TBN;
 
+const int MAX_BONES = 100;
+const int MAX_BONE_INFLUENCE = 4;
+
+uniform mat4 bones[MAX_BONES];
+uniform int numBones;
+uniform mat4 view;
+uniform mat4 projection;
+uniform mat4 model;
+
 void main() {
     uTexCoords = uv;
-//    Normal = normal;
-    Normal = mat3(transpose(inverse(model))) * normal;
+
+    // Bone processing
+    mat4 boneTransform;
+
+    if (numBones > 0)
+    {
+        boneTransform = bones[boneIds[0]] * weights[0];
+        boneTransform += bones[boneIds[1]] * weights[1];
+        boneTransform += bones[boneIds[2]] * weights[2];
+        boneTransform += bones[boneIds[3]] * weights[3];
+    }
+    else boneTransform = mat4(1.0f);
+
+    Normal = mat3(transpose(inverse(model * boneTransform))) * normal;
     FragPos = vec3(model * vec4(position, 1.0));
     FragView = vec3(view * vec4(FragPos, 1.0));
 

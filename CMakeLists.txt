@@ -16,13 +16,6 @@ endif ()
 
 add_subdirectory(AzxEngineGL)
 
-#if (VCPKG_TOOLCHAIN)
-#    message(STATUS "Using vcpkg Package Manager")
-#    find_package(imgui CONFIG REQUIRED)
-#else ()
-#    find_package(imgui_external REQUIRED)
-#endif ()
-
 add_compile_options(-Wall -Wextra -Wconversion -Wdouble-promotion -Wno-sign-conversion -Wno-unknown-pragmas -Wuninitialized)
 add_link_options(-Wall -Wextra -Wconversion -Wdouble-promotion -Wno-sign-conversion -Wno-unknown-pragmas -Wuninitialized)
 
@@ -42,9 +35,3 @@ message(STATUS "Copying assets files.")
 file(COPY assets DESTINATION ${PROJECT_BINARY_DIR})
 
 target_link_libraries(OpenGLPlayground PRIVATE AzxEngineGL)
-if (VCPKG_TOOLCHAIN)
-    target_link_libraries(OpenGLPlayground PRIVATE imgui::imgui)
-else ()
-    target_link_libraries(OpenGLPlayground PRIVATE imgui)
-endif ()
-
