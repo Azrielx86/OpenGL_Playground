@@ -27,26 +27,33 @@ void main() {
     uTexCoords = uv;
 
     // Bone processing
-    mat4 boneTransform;
+    mat4 boneTransform = mat4(1.0f);
 
-    if (numBones > 0)
+    //    if (numBones > 0)
+    //    {
+    mat4 totalBoneTransform = mat4(0.0f);
+    for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
     {
-        boneTransform = bones[boneIds[0]] * weights[0];
-        boneTransform += bones[boneIds[1]] * weights[1];
-        boneTransform += bones[boneIds[2]] * weights[2];
-        boneTransform += bones[boneIds[3]] * weights[3];
+        if (boneIds[i] == -1) continue;
+        if (weights[i] == 0.0f) continue;
+        totalBoneTransform += bones[boneIds[i]] * weights[i];
     }
-    else boneTransform = mat4(1.0f);
+    boneTransform = totalBoneTransform;
+    //    }
+    //    else boneTransform = mat4(1.0f);
 
     Normal = mat3(transpose(inverse(model * boneTransform))) * normal;
-    FragPos = vec3(model * vec4(position, 1.0));
+
+    vec4 worldPos = model * boneTransform * vec4(position, 1.0f);
+    FragPos = worldPos.xyz;
     FragView = vec3(view * vec4(FragPos, 1.0));
 
-    vec3 T = normalize(vec3(model * vec4(tangent, 0.0f)));
-    vec3 B = normalize(vec3(model * vec4(bitangent, 0.0f)));
-    vec3 N = normalize(vec3(model * vec4(normal, 0.0f)));
+    mat4 normalMatrix = transpose(inverse(model * boneTransform));
+    vec3 T = normalize(vec3(normalMatrix * vec4(tangent, 0.0f)));
+    vec3 B = normalize(vec3(normalMatrix * vec4(bitangent, 0.0f)));
+    vec3 N = normalize(vec3(normalMatrix * vec4(normal, 0.0f)));
 
     TBN = mat3(T, B, N);
 
-    gl_Position = projection * vec4(FragView, 1.0);
+    gl_Position = projection * view * worldPos;
 }

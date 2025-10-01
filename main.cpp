@@ -161,7 +161,7 @@ int main()
     // Model pod("./assets/models/pod/source/pod.fbx");
     Model twob("./assets/models/2b/2b_rig.fbx");
 
-    SkinnedAnimation *animation = twob.GetAnimation(0);
+    SkinnedAnimation *animation = twob.GetAnimation(1);
 
     SkinnedAnimator animator;
 
@@ -348,13 +348,12 @@ int main()
         animator.UpdateAnimation(deltaTime);
         auto finalBones = animator.GetFinalBoneMatrices();
 
-        for (unsigned int i = 0; i < finalBones.size(); i++)
-            shader.Set<4, 4>(std::format("bones[{}]", i).c_str(), finalBones[i]);
-
         model = glm::mat4(1.0f);
         model = glm::translate(model, {0.0f, 0.0f, 1.0f});
         model = glm::scale(model, {0.8f, 0.8f, 0.8f});
         shader.Set<4, 4>(uniforms.model, model);
+        for (unsigned int i = 0; i < finalBones.size(); i++)
+            shader.Set<4, 4>(std::format("bones[{}]", i).c_str(), finalBones[i]);
         twob.Render(shader);
 
         if (enableGrid)
