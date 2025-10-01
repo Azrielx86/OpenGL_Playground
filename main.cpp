@@ -18,6 +18,8 @@
 #include "Model.h"
 #include "Resources/ResourceManager.h"
 #include "Shader.h"
+#include "SkinnedAnimation.h"
+#include "SkinnedAnimator.h"
 #include "Skybox.h"
 #include "StorageBufferDynamicArray.h"
 #include "Window.h"
@@ -157,7 +159,16 @@ int main()
 
     Model turret("./assets/models/turret/source/turret_model.fbx");
     // Model pod("./assets/models/pod/source/pod.fbx");
-    Model twob("./assets/models/2b/2b.fbx");
+    Model twob("./assets/models/2b/2b_rig.fbx");
+
+    SkinnedAnimation *animation = twob.GetAnimation(0);
+
+    SkinnedAnimator animator;
+
+    if (animation)
+    {
+        animator.PlayAnimation(animation);
+    }
 
     // clang-format off
 	Skybox skybox({
@@ -259,8 +270,8 @@ int main()
                                             .turnSpeed = 80.0f,
                                             .enabled = true});
     registry.AddComponent(turretEntity, ECS::Components::MeshRenderer{
-                                            .model = std::make_shared<Model>(turret),
-                                            .shader = std::make_shared<Shader>(shader)});
+                                            .model = &turret,
+                                            .shader = &shader});
 
     registry.GetComponent<ECS::Components::Transform>(turretEntity).scale = {0.02f, 0.02f, 0.02f};
 
@@ -334,9 +345,14 @@ int main()
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+        animator.UpdateAnimation(deltaTime);
+        auto finalBones = animator.GetFinalBoneMatrices();
+
+        for (unsigned int i = 0; i < finalBones.size(); i++)
+            shader.Set<4, 4>(std::format("bones[{}]", i).c_str(), finalBones[i]);
+
         model = glm::mat4(1.0f);
         model = glm::translate(model, {0.0f, 0.0f, 1.0f});
-        model = glm::rotate(model, static_cast<float>(glfwGetTime()), {0.0f, 1.0f, 0.0f});
         model = glm::scale(model, {0.8f, 0.8f, 0.8f});
         shader.Set<4, 4>(uniforms.model, model);
         twob.Render(shader);
