@@ -29,9 +29,13 @@ endif ()
 
 add_executable(OpenGLPlayground main.cpp)
 
-message(STATUS "Copying shader files.")
-file(COPY shaders DESTINATION ${PROJECT_BINARY_DIR})
-message(STATUS "Copying assets files.")
-file(COPY assets DESTINATION ${PROJECT_BINARY_DIR})
+if (NOT USE_DEBUG_ASSETS)
+    message(STATUS "Copying shader files.")
+    file(COPY shaders DESTINATION ${PROJECT_BINARY_DIR})
+    message(STATUS "Copying assets files.")
+    file(COPY assets DESTINATION ${PROJECT_BINARY_DIR})
+else ()
+    message(STATUS "Using debug assets.")
+endif ()
 
 target_link_libraries(OpenGLPlayground PRIVATE AzxEngineGL)

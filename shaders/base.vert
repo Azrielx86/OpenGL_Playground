@@ -14,7 +14,7 @@ out vec3 FragPos;
 out vec3 FragView;
 out mat3 TBN;
 
-const int MAX_BONES = 100;
+const int MAX_BONES = 200;
 const int MAX_BONE_INFLUENCE = 4;
 
 uniform mat4 bones[MAX_BONES];
@@ -26,11 +26,7 @@ uniform mat4 model;
 void main() {
     uTexCoords = uv;
 
-    // Bone processing
     mat4 boneTransform = mat4(1.0f);
-
-    //    if (numBones > 0)
-    //    {
     mat4 totalBoneTransform = mat4(0.0f);
     for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
     {
@@ -39,8 +35,6 @@ void main() {
         totalBoneTransform += bones[boneIds[i]] * weights[i];
     }
     boneTransform = totalBoneTransform;
-    //    }
-    //    else boneTransform = mat4(1.0f);
 
     Normal = mat3(transpose(inverse(model * boneTransform))) * normal;
 

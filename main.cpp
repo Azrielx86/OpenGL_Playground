@@ -275,6 +275,12 @@ int main()
 
     registry.GetComponent<ECS::Components::Transform>(turretEntity).scale = {0.02f, 0.02f, 0.02f};
 
+    // ECS::Entity twoBEntity = registry.CreateEntity();
+    // registry.AddComponent(twoBEntity, ECS::Components::Transform{});
+    // registry.AddComponent(twoBEntity, ECS::Components::MeshRenderer{
+    //                                         .model = &twob,
+    //                                         .shader = &shader});
+
     // endregion Entity creation
 
     glm::mat4 view;
@@ -356,6 +362,9 @@ int main()
             shader.Set<4, 4>(std::format("bones[{}]", i).c_str(), finalBones[i]);
         twob.Render(shader);
 
+        for (unsigned int i = 0; i < MAX_BONES; i++)
+            shader.Set<4, 4>(std::format("bones[{}]", i).c_str(), glm::mat4(1.0f));
+
         if (enableGrid)
         {
             gridShader.Use();
@@ -364,10 +373,9 @@ int main()
             plane.Render();
             shader.Use();
         }
+        glDisable(GL_BLEND);
 
         shader.Set("pointLightsSize", static_cast<int>(pointLights.Size()));
-
-        glDisable(GL_BLEND);
 
         // region gui
         ImGui::Begin("Camera info");
@@ -453,7 +461,7 @@ int main()
             ImGui::SliderFloat("Linear", &pLight.linear, 0.0, 1.0);
             ImGui::SliderFloat("Quadratic", &pLight.quadratic, 0.0, 1.0);
             ImGui::Checkbox("Is turned on", reinterpret_cast<bool *>(&pLight.isTurnedOn));
-            ImGui::ColorEdit4("Color", reinterpret_cast<float *>(&pLight.diffuse), ImGuiColorEditFlags_Float);
+            ImGui::ColorEdit3("Color", reinterpret_cast<float *>(&pLight.diffuse), ImGuiColorEditFlags_Float);
             pointLights.UpdateIndex(i);
 
             if (ImGui::Button(std::format("Delete", i).c_str()))
