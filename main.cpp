@@ -6,11 +6,13 @@
 // endregion Global Include
 
 #include "Camera.h"
+#include "ECS/Components/Collider.h"
 #include "ECS/Components/MeshRenderer.h"
 #include "ECS/Components/PlayerController.h"
 #include "ECS/Components/Transform.h"
 #include "ECS/Registry.h"
 #include "ECS/SystemManager.h"
+#include "ECS/Systems/CollisionSystem.h"
 #include "ECS/Systems/PlayerControlSystem.h"
 #include "ECS/Systems/RenderSystem.h"
 #include "Input/Keyboard.h"
@@ -149,8 +151,11 @@ int main()
     registry.RegisterComponent<ECS::Components::Transform>();
     registry.RegisterComponent<ECS::Components::MeshRenderer>();
     registry.RegisterComponent<ECS::Components::PlayerController>();
+    registry.RegisterComponent<ECS::Components::AABBCollider>();
+    registry.RegisterComponent<ECS::Components::SBBCollider>();
     systemManager.RegisterSystem<ECS::Systems::RenderSystem>();
     systemManager.RegisterSystem<ECS::Systems::PlayerControlSystem>();
+    systemManager.RegisterSystem<ECS::Systems::CollisionSystem>();
 
     resources.ScanResources();
     Resources::ResourceManager::InitDefaultResources();
@@ -272,14 +277,24 @@ int main()
     registry.AddComponent(turretEntity, ECS::Components::MeshRenderer{
                                             .model = &turret,
                                             .shader = &shader});
+    registry.AddComponent(turretEntity, ECS::Components::AABBCollider{
+                                            .min = {-15.39f, 0.63f, -25.98f},
+                                            .max = {15.39f, 58.68f, 25.98f}});
 
     registry.GetComponent<ECS::Components::Transform>(turretEntity).scale = {0.02f, 0.02f, 0.02f};
 
-    // ECS::Entity twoBEntity = registry.CreateEntity();
-    // registry.AddComponent(twoBEntity, ECS::Components::Transform{});
-    // registry.AddComponent(twoBEntity, ECS::Components::MeshRenderer{
-    //                                         .model = &twob,
-    //                                         .shader = &shader});
+    ECS::Entity twoBEntity = registry.CreateEntity();
+    registry.AddComponent(twoBEntity, ECS::Components::Transform{
+        .translation = {0.0f, 0.0f, 1.0f},
+        .scale = {0.8f, 0.8f, 0.8f}
+    });
+    registry.AddComponent(twoBEntity, ECS::Components::MeshRenderer{
+                                            .model = &twob,
+                                            .shader = &shader});
+    registry.AddComponent(twoBEntity, ECS::Components::AABBCollider{
+        .min = {-0.3f, 0.0f, -0.31f},
+        .max = {0.3f, 2.1f, 0.31f}
+    });
 
     // endregion Entity creation
 
@@ -351,16 +366,16 @@ int main()
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-        animator.UpdateAnimation(deltaTime);
-        auto finalBones = animator.GetFinalBoneMatrices();
+        // animator.UpdateAnimation(deltaTime);
+        // auto finalBones = animator.GetFinalBoneMatrices();
 
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, {0.0f, 0.0f, 1.0f});
-        model = glm::scale(model, {0.8f, 0.8f, 0.8f});
-        shader.Set<4, 4>(uniforms.model, model);
-        for (unsigned int i = 0; i < finalBones.size(); i++)
-            shader.Set<4, 4>(std::format("bones[{}]", i).c_str(), finalBones[i]);
-        twob.Render(shader);
+        // model = glm::mat4(1.0f);
+        // model = glm::translate(model, {0.0f, 0.0f, 1.0f});
+        // model = glm::scale(model, {0.8f, 0.8f, 0.8f});
+        // shader.Set<4, 4>(uniforms.model, model);
+        // for (unsigned int i = 0; i < finalBones.size(); i++)
+        //     shader.Set<4, 4>(std::format("bones[{}]", i).c_str(), finalBones[i]);
+        // twob.Render(shader);
 
         for (unsigned int i = 0; i < MAX_BONES; i++)
             shader.Set<4, 4>(std::format("bones[{}]", i).c_str(), glm::mat4(1.0f));
