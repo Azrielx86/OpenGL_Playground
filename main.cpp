@@ -18,6 +18,9 @@
 #include "Input/Keyboard.h"
 #include "Lights/PointLight.h"
 #include "Model.h"
+#include "Primitives/AbstractPrimitive.h"
+#include "Primitives/Cube.h"
+#include "Primitives/Plane.h"
 #include "Resources/ResourceManager.h"
 #include "Shader.h"
 #include "SkinnedAnimation.h"
@@ -58,59 +61,8 @@ struct Uniforms
 
 Uniforms uniforms{};
 
-// TODO : Do this in a better way... (Grid exclusive class)
-struct SingleMesh
-{
-    GLuint vao = 0;
-    GLuint vbo = 0;
-    GLuint ibo = 0;
-    GLint indexCount = 0;
-
-    void Render() const
-    {
-        glBindVertexArray(vao);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-        glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
-    }
-};
-
-SingleMesh plane;
-
-void CreateSimpleMeshes()
-{
-    // clang-format off
-	 constexpr float planeVertices[] = {
-		-1.0, 0.0, -1.0,
-		1.0, 0.0, -1.0,
-		1.0, 0.0, 1.0,
-		-1.0, 0.0, 1.0,
-	};
-
-	const unsigned int planeIndices[] = {0, 2, 1, 2, 0, 3};
-    // clang-format on
-
-    glGenVertexArrays(1, &plane.vao);
-    glBindVertexArray(plane.vao);
-
-    glGenBuffers(1, &plane.vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, plane.vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), &planeVertices, GL_STATIC_DRAW);
-
-    glGenBuffers(1, &plane.ibo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, plane.ibo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(planeIndices), &planeIndices, GL_STATIC_DRAW);
-
-    plane.indexCount = 6;
-
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, static_cast<void *>(nullptr));
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-}
+Primitives::Plane plane;
+Primitives::Cube cube;
 
 void ConfigureKeys(Window &window)
 {
@@ -153,6 +105,7 @@ int main()
     registry.RegisterComponent<ECS::Components::PlayerController>();
     registry.RegisterComponent<ECS::Components::AABBCollider>();
     registry.RegisterComponent<ECS::Components::SBBCollider>();
+    registry.RegisterComponent<ECS::Components::OBBCollider>();
     systemManager.RegisterSystem<ECS::Systems::RenderSystem>();
     systemManager.RegisterSystem<ECS::Systems::PlayerControlSystem>();
     systemManager.RegisterSystem<ECS::Systems::CollisionSystem>();
@@ -193,6 +146,7 @@ int main()
     Shader sharpShader = *resources.GetShader("sharp");
     Shader grayscaleShader = *resources.GetShader("grayscale");
     Shader gridShader = *resources.GetShader("infinite_grid");
+    Shader debugShader = *resources.GetShader("debug");
 
     Framebuffer blurFramebuffer(blurShader, window.GetWidth(), window.GetHeight());
     Framebuffer sharpFramebuffer(sharpShader, window.GetWidth(), window.GetHeight());
@@ -264,7 +218,9 @@ int main()
                      .isTurnedOn = true});
 
     ConfigureKeys(window);
-    CreateSimpleMeshes();
+
+    plane.Init();
+    cube.Init();
 
     // region Entity creation
 
@@ -277,30 +233,36 @@ int main()
     registry.AddComponent(turretEntity, ECS::Components::MeshRenderer{
                                             .model = &turret,
                                             .shader = &shader});
-    registry.AddComponent(turretEntity, ECS::Components::AABBCollider{
-                                            .min = {-15.39f, 0.63f, -25.98f},
-                                            .max = {15.39f, 58.68f, 25.98f}});
+    // registry.AddComponent(turretEntity, ECS::Components::AABBCollider{
+    //                                         .min = {-15.39f, 0.63f, -25.98f},
+    //                                         .max = {15.39f, 58.68f, 25.98f}});
+    registry.AddComponent(turretEntity, ECS::Components::OBBCollider{
+                                            .center = {0.0f, 29.34f, 0.0f},
+                                            .rotation = glm::quat{1.0f, 0.0f, 0.0f, 0.0f},
+                                            .halfExtents = {15.39f, 29.34f, 25.98f}});
 
     registry.GetComponent<ECS::Components::Transform>(turretEntity).scale = {0.02f, 0.02f, 0.02f};
 
     ECS::Entity twoBEntity = registry.CreateEntity();
     registry.AddComponent(twoBEntity, ECS::Components::Transform{
-        .translation = {0.0f, 0.0f, 1.0f},
-        .scale = {0.8f, 0.8f, 0.8f}
-    });
+                                          .translation = {0.0f, 0.0f, 1.0f},
+                                          .scale = {0.8f, 0.8f, 0.8f}});
     registry.AddComponent(twoBEntity, ECS::Components::MeshRenderer{
-                                            .model = &twob,
-                                            .shader = &shader});
-    registry.AddComponent(twoBEntity, ECS::Components::AABBCollider{
-        .min = {-0.3f, 0.0f, -0.31f},
-        .max = {0.3f, 2.1f, 0.31f}
-    });
+                                          .model = &twob,
+                                          .shader = &shader});
+    // registry.AddComponent(twoBEntity, ECS::Components::AABBCollider{
+    //                                       .min = {-0.3f, 0.0f, -0.31f},
+    //                                       .max = {0.3f, 2.1f, 0.31f}});
+    registry.AddComponent(twoBEntity, ECS::Components::OBBCollider{
+                                          .center = {0.0f, 1.05f, 0.0f},
+                                          .rotation = {1.0f, 0.0f, 0.0f, 0.0f},
+                                          .halfExtents = {0.3f, 1.05f, 0.3f}});
 
     // endregion Entity creation
 
     glm::mat4 view;
     glm::mat4 projection;
-    glm::mat4 model;
+    // glm::mat4 model;
 
     while (!window.ShouldClose())
     {
@@ -388,9 +350,54 @@ int main()
             plane.Render();
             shader.Use();
         }
+
+        glEnable(GL_BLEND);
+
         glDisable(GL_BLEND);
 
         shader.Set("pointLightsSize", static_cast<int>(pointLights.Size()));
+
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        debugShader.Use();
+        const GLint debugProjection = debugShader.GetUniformLocation("projection");
+        const GLint debugView = debugShader.GetUniformLocation("view");
+        const GLint debugModel = debugShader.GetUniformLocation("model");
+        const GLint debugColor = debugShader.GetUniformLocation("color");
+        debugShader.Set<3>(debugColor, glm::vec3(1.0f, 1.0f, 0.0f));
+        debugShader.Set<4, 4>(debugProjection, projection);
+        debugShader.Set<4, 4>(debugView, view);
+
+        // AABB Debug draw
+        for (const ECS::Entity colliderEntity : registry.View<ECS::Components::AABBCollider, ECS::Components::Transform>())
+        {
+            const auto &transform = registry.GetComponent<ECS::Components::Transform>(colliderEntity);
+            const auto &collider = registry.GetComponent<ECS::Components::AABBCollider>(colliderEntity);
+            const auto [min, max] = collider.GetWorldAABB(transform);
+
+            auto collidersModel = glm::mat4(1.0f);
+            collidersModel = glm::translate(collidersModel, min + (max - min) * 0.5f);
+            collidersModel = glm::scale(collidersModel, max - min);
+            debugShader.Set<4, 4>(debugModel, collidersModel);
+
+            cube.Render();
+        }
+
+        // OBB Debug draw
+        for (const ECS::Entity obbEntity : registry.View<ECS::Components::OBBCollider, ECS::Components::Transform>())
+        {
+            const auto &transform = registry.GetComponent<ECS::Components::Transform>(obbEntity);
+            const auto &collider = registry.GetComponent<ECS::Components::OBBCollider>(obbEntity);
+            const auto worldOBB = collider.GetWorldOBB(transform);
+
+            auto collidersModel = glm::mat4(1.0f);
+            collidersModel = glm::translate(collidersModel, worldOBB.center);
+            collidersModel *= glm::mat4_cast(worldOBB.rotation);
+            collidersModel = glm::scale(collidersModel, worldOBB.halfExtents * 2.0f);
+            debugShader.Set<4, 4>(debugModel, collidersModel);
+
+            cube.Render();
+        }
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
         // region gui
         ImGui::Begin("Camera info");
