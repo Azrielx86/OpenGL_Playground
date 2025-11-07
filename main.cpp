@@ -106,9 +106,9 @@ int main()
     registry.RegisterComponent<ECS::Components::AABBCollider>();
     registry.RegisterComponent<ECS::Components::SBBCollider>();
     registry.RegisterComponent<ECS::Components::OBBCollider>();
+    systemManager.RegisterSystem<ECS::Systems::CollisionSystem>();
     systemManager.RegisterSystem<ECS::Systems::RenderSystem>();
     systemManager.RegisterSystem<ECS::Systems::PlayerControlSystem>();
-    systemManager.RegisterSystem<ECS::Systems::CollisionSystem>();
 
     resources.ScanResources();
     Resources::ResourceManager::InitDefaultResources();
@@ -372,11 +372,11 @@ int main()
         {
             const auto &transform = registry.GetComponent<ECS::Components::Transform>(colliderEntity);
             const auto &collider = registry.GetComponent<ECS::Components::AABBCollider>(colliderEntity);
-            const auto [min, max] = collider.GetWorldAABB(transform);
+            const auto worldCollider = collider.GetWorldAABB(transform);
 
             auto collidersModel = glm::mat4(1.0f);
-            collidersModel = glm::translate(collidersModel, min + (max - min) * 0.5f);
-            collidersModel = glm::scale(collidersModel, max - min);
+            collidersModel = glm::translate(collidersModel, worldCollider.min + (worldCollider.max - worldCollider.min) * 0.5f);
+            collidersModel = glm::scale(collidersModel, worldCollider.max - worldCollider.min);
             debugShader.Set<4, 4>(debugModel, collidersModel);
 
             cube.Render();
